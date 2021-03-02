@@ -72,3 +72,15 @@ target_sources(libio PRIVATE
         src/utility.cpp
 )
 
+install(TARGETS libio EXPORT libioTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include
+)
+#install(FILES include/io/XorAnalyzer.h DESTINATION io/include)
+
+install(EXPORT libioTargets
+        FILE libioConfig.cmake
+        NAMESPACE IO::
+        DESTINATION lib/cmake/libio
+)

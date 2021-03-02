@@ -1,0 +1,3 @@
+cmake .. -DCMAKE_INSTALL_PREFIX=install
+cmake --build . --target install  
+cmake .. -Dlibio_DIR=C:C:\develop\RecoveryTools\build\install\lib\cmake\libio\

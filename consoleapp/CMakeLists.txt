@@ -39,10 +39,10 @@ target_sources(${APP_NAME} PRIVATE
                    src/xoranalyzer.cpp 
  )
 
- target_include_directories(
-        ${APP_NAME}
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../lib
-)
-
-target_link_libraries(${APP_NAME} libio)
+ #target_include_directories(
+ #       ${APP_NAME}
+ #       PRIVATE
+ #       ${CMAKE_CURRENT_SOURCE_DIR}/../lib
+#)
+#find_package(libio CONFIG REQUIRED)
+#target_link_libraries(${APP_NAME} IO::libio)
