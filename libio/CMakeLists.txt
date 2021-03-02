@@ -11,6 +11,8 @@ configure_file(
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+message("cmake source dir =" ${CMAKE_SOURCE_DIR})
+
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -45,6 +47,7 @@ set(HEADERS
         include/io/utility.h
         include/io/xoranalyzer.h    
 )
+
 
 add_library(libio STATIC ${SOURCES} ${HEADERS})
 add_library(IO::libio ALIAS libio)
