@@ -77,7 +77,12 @@ install(TARGETS libio EXPORT libioTargets
         ARCHIVE DESTINATION lib
         INCLUDES DESTINATION include
 )
-#install(FILES include/io/XorAnalyzer.h DESTINATION io/include)
+foreach ( file ${INCLUDE_FILES} )
+    get_filename_component( dir ${file} DIRECTORY )
+    install( FILES ${file} DESTINATION include/${dir} )
+    message(${dir})
+endforeach()
+install(FILES include/io/XorAnalyzer.h DESTINATION include/io/)
 
 install(EXPORT libioTargets
         FILE libioConfig.cmake

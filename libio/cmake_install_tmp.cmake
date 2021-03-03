@@ -53,3 +53,9 @@ export(PACKAGE IO)
 ## Add test
 #enable_testing()
 #add_subdirectory(test)
+
+foreach ( file ${INCLUDE_FILES} )
+    get_filename_component( dir ${file} DIRECTORY )
+    install( FILES ${file} DESTINATION include/${dir} )
+    message(${dir})
+endforeach()
