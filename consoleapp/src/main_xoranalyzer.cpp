@@ -1,4 +1,4 @@
-#include "io/XorAnalyzer.h"
+#include "XorAnalyzer.h"
 
 int XorAnalyzer(int argc, wchar_t* argv[])
 {

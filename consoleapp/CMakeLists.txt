@@ -24,7 +24,10 @@ if(Boost_FOUND)
         include_directories(${Boost_INCLUDE_DIRS}) 
 endif()
 
-add_executable(${APP_NAME} ${SOURCES})
+set(HEADERS 
+        include/xoranalyzer.h 
+)
+add_executable(${APP_NAME} ${SOURCES} ${HEADERS}) 
 
 target_include_directories(${APP_NAME}
     PUBLIC 
@@ -36,7 +39,8 @@ target_include_directories(${APP_NAME}
 )
 
 target_sources(${APP_NAME} PRIVATE
-                   src/main_xoranalyzer.cpp 
+                   src/main_xoranalyzer.cpp
+                   src/xoranalyzer.cpp  
  )
 
  #target_include_directories(

@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "utility.h"
-#include "IODevice.h"
+#include "io/utility.h"
+#include "io/IODevice.h"
 
 #pragma warning(disable:4251)
 namespace IO
@@ -60,18 +60,43 @@ namespace IO
 
 	};
 
+	class NumberOfBytesArray
+	{
+		std::vector<ByteCount> byteCountArray_;
+		public:
+			ByteCounts(uint32_t size)
+			{
+				byteCountArray_.resize(size);
+			}
+			void add(uint32_t offset , uint8_t  byte_value)
+			{
+				byteCountArray_.at(offset)=byte_value;
+			}
+
+	};
 
 	class XorAnalyzer
 	{
-		File dump_file_;
+		uint64_t xorSize_;
+		File dumpFile_;
+		File xorFile_;
+		std::unique_ptr<NumberOfBytesArray> numberOfBytes = nullptr;
+		//File::Ptr target_file_;
 
 	public:
 		XorAnalyzer(const path_string& dump_file)
-			:dump_file_(dump_file)
+			:dumpFile_(dump_file)
 		{
 		}
+		XorAnalyzer(const File & dumpFile , const File & xorFile , uint64_t xorSize)
+			: dumpFile_(dumpFile)
+			, xorFile_(xorFile)
+			, xorSize_(xorSize)
+		{}
 		~XorAnalyzer(void)
 		{
+			dumpFile_.Close();
+			xorFile_.Close();
 		}
 
 		DataArray generateBlock(uint32_t block_size)
@@ -127,14 +152,14 @@ namespace IO
 
 			//uint32_t num_sectors = block.size() / xor_size;
 
-			for (auto i = 0; i < block.size(); ++i)
+			for (uint32_t i = 0; i < block.size(); ++i)
 			{
 				auto iPos = i % xor_size;
 				auto pData = block[i];
 				pByteCounts[iPos].add(pData);
 			}
 
-			for (auto i = 0; i < xor_size; ++i)
+			for (uint32_t i = 0; i < xor_size; ++i)
 				resBlock[i] = pByteCounts[i].getMax();
 
 
@@ -143,9 +168,9 @@ namespace IO
 			return resBlock;
 		}
 
-		void Analize(const path_string& result_xor, DWORD xor_size)
+		void Analize()
 		{
-			dump_file_.OpenRead();
+			dumpFile_.OpenRead();
 
 			if (xor_size <= 0)
 			{
@@ -153,8 +178,7 @@ namespace IO
 				return;
 			}
 
-			File target_file(result_xor);
-			target_file.OpenCreate();
+
 
 
 			ULONGLONG needMemory = NumBytesForBlock(xor_size);
@@ -166,7 +190,7 @@ namespace IO
 			DWORD xor_offset = 0;
 			//DWORD bytesRead = 0;
 			DWORD bytesWritten = 0;
-			LONGLONG read_offset = 0;
+			uint64_t read_offset = 0;
 
 			BYTE* xor_data = new BYTE[xor_size];
 
@@ -178,31 +202,18 @@ namespace IO
 					buffer_size = xor_size - xor_offset;
 				else
 					buffer_size = getChunckBufferSize(chunk_size, nChunk, xor_size);
+				
+				//auto buff_size = IO::calcBlockSize(xor_offset,xor_size, chunk_size);
+
 				read_offset = xor_offset;
+
+				//numberOfBytes = std::make_unique<NumberOfBytesArray>(buffer_size);
+
 				ByteCount* pByteCounts = new ByteCount[buffer_size];
 				DataArray buffer(buffer_size);
 
 
-				while (read_offset < dump_file_.Size())
-				{
-					dump_file_.setPosition(read_offset);
-					dump_file_.ReadData(buffer);
-
-
-					if (IO::isNot00orFF(buffer.data(), buffer.size()))
-					{
-						for (DWORD nByte = 0; nByte < buffer.size(); ++nByte)
-							pByteCounts[nByte].add(buffer[nByte]);
-					}
-
-					read_offset += xor_size;
-				}
-
-				if (xor_offset == 0)
-				{
-					int k = 1;
-					k = 2;
-				}
+				ReadAllBytesAndAdd(read_offset, bufferSize, pByteCounts);
 
 				for (DWORD nByte = 0; nByte < buffer_size; ++nByte)
 					xor_data[(DWORD)nByte + xor_offset] = pByteCounts[nByte].getMax();
@@ -216,7 +227,27 @@ namespace IO
 
 			delete[] xor_data;
 
-			dump_file_.Close();
+			dumpFile_.Close();
+		}
+
+		void ReadAllBytesAndAdd(uint64_t read_offset ,const uint32_t bufferSize , ByteCount*pByteCounts)
+		{
+			DataArray buffer(bufferSize);
+				while (read_offset < File_.Size())
+				{
+					dumpFile_.setPosition(read_offset);
+					dumpFile_.ReadData(buffer);
+
+
+					if (IO::isNot00orFF(buffer.data(), buffer.size()))
+					{
+						for (DWORD nByte = 0; nByte < buffer.size(); ++nByte)
+							pByteCounts[nByte].add(buffer[nByte]);
+					}
+
+					read_offset += xorSize_;
+				}
+
 		}
 
 		DWORD getChunckBufferSize(DWORD chunck_size, int nChunck, DWORD xor_size)
