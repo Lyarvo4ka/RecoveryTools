@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project("libraw")
+project("libraw" VERSION 0.0.1)
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -50,6 +50,22 @@ target_include_directories(libraw
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_link_libraries(libio)
+find_package(libio CONFIG REQUIRED)
+target_link_libraries(libraw PUBLIC libio)
+
+install(TARGETS libraw EXPORT librawTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include
+)
+
+install(FILES ${HEADERS} DESTINATION include/raw/)
+
+install(EXPORT librawTargets
+        FILE librawConfig.cmake
+        NAMESPACE RAW::
+        DESTINATION lib/cmake/libraw
+)

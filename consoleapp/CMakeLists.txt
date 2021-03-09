@@ -50,3 +50,6 @@ target_sources(${APP_NAME} PRIVATE
 #)
 find_package(libio CONFIG REQUIRED)
 target_link_libraries(${APP_NAME} IO::libio)
+
+find_package(libraw CONFIG REQUIRED)
+target_link_libraries(${APP_NAME} RAW::libraw)

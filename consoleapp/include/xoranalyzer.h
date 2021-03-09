@@ -70,7 +70,7 @@ namespace IO
 			}
 			void add(uint32_t offset , uint8_t  byte_value)
 			{
-				byteCountArray_.at(offset)=byte_value;
+				byteCountArray_.at(offset).add(byte_value);
 			}
 
 	};
@@ -98,7 +98,10 @@ namespace IO
 			dumpFile_.Close();
 			xorFile_.Close();
 		}
-
+		uint64_t getXorSize() const
+		{
+			return xorSize_;
+		}
 		DataArray generateBlock(uint32_t block_size)
 		{
 			DataArray block(block_size);
@@ -250,10 +253,12 @@ namespace IO
 
 		}
 
-		DWORD getChunckBufferSize(DWORD chunck_size, int nChunck, DWORD xor_size)
+		void getAllMaxValues()
+
+		uint32_t getChunckBufferSize(uint32_t chunck_size, int nChunck, uint32_t xor_size)
 		{
-			DWORD buffer_size = 0;
-			DWORD xor_offset = chunck_size * nChunck;
+			uint32_t buffer_size = 0;
+			uint32_t xor_offset = chunck_size * nChunck;
 			if ((xor_size - xor_offset) < chunck_size)
 				buffer_size = xor_size - xor_offset;
 			else

@@ -1,16 +1,21 @@
-#include "XorAnalyzer.h"
+#include "xoranalyzer.h"
 
 int XorAnalyzer(int argc, wchar_t* argv[])
 {
 	if (argc == 4)
 	{
-		std::wstring srcFileName = argv[1];
-		std::wstring xorFileName = argv[2];
+		std::wstring dumpFilename = argv[1];
+		std::wstring xorFilename = argv[2];
 		int block_size = std::stoi(argv[3]);
 
+		IO::File dumpFile(dumpFilename);
+		dumpFile.OpenRead();
 
-		IO::XorAnalyzer xor_analyzer(srcFileName);
-		xor_analyzer.Analize(xorFileName, block_size);
+		IO::File xorFile(xorFilename);
+		xorFile.OpenCreate();
+
+		IO::XorAnalyzer xor_analyzer(dumpFile);
+		xor_analyzer.Analize(xorFileName, xorFile, block_size);
 
 	}
 	else

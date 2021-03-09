@@ -77,7 +77,7 @@ install(TARGETS libio EXPORT libioTargets
         INCLUDES DESTINATION include
 )
 
-install(FILES include/io/XorAnalyzer.h DESTINATION include/io/)
+install(FILES ${HEADERS} DESTINATION include/io/)
 
 install(EXPORT libioTargets
         FILE libioConfig.cmake
