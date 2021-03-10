@@ -1,7 +1,6 @@
-
 cmake_minimum_required(VERSION 3.14)
 
-set(LIB_NAME libjsonreader)
+set(APP_NAME SignatureTestConsole)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -14,11 +13,12 @@ if(Boost_FOUND)
         include_directories(${Boost_INCLUDE_DIRS}) 
 endif()
 
- if (WIN32)
-    project(${LIB_NAME} LANGUAGES CXX)
+if (WIN32)
+    project(${APP_NAME} LANGUAGES CXX)
 elseif(UNIX)
-    project(${LIB_NAME})
+    project(${APP_NAME})
 endif()
+
 
 #set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo" CACHE STRING "" FORCE)
 #======================= INCLUSION OF Qt =======================#
@@ -52,6 +52,7 @@ include_directories(${SOURCE_DIR})
     "${SOURCE_DIR}/*.cpp"
 )
 
+
 #=================== SETUP EXECTUABLE ====================#
 # Enable debug logging on RELWITHDEBINFO configuration
 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
@@ -61,25 +62,24 @@ set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
 # Add the forms directory to the AUTOUIC search paths
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_AUTOUIC_SEARCH_PATHS} ${FORMS_DIR})
 
-add_library(${LIB_NAME} STATIC  ${SOURCES} )
+add_executable(${APP_NAME}  ${SOURCES} )
 
 # target_sources(${LIB_NAME} PRIVATE 
 #         src/jsonreader.cpp
 # )
-message("QTDIR " $ENV{QTDIR})
 
 # Add the target includes for MY_PROJECT 
-target_include_directories(${LIB_NAME} PRIVATE ${FORMS_DIR})
-target_include_directories(${LIB_NAME} PRIVATE ${INCLUDE_DIR})
-target_include_directories(${LIB_NAME} PRIVATE ${SOURCE_DIR})
+target_include_directories(${APP_NAME} PRIVATE ${FORMS_DIR})
+target_include_directories(${APP_NAME} PRIVATE ${INCLUDE_DIR})
+target_include_directories(${APP_NAME} PRIVATE ${SOURCE_DIR})
 
 #===================== LINKING LIBRARIES =======================#
-target_link_libraries(${LIB_NAME} Qt5::Core)
+target_link_libraries(${APP_NAME} Qt5::Core)
 
 find_package(libio CONFIG REQUIRED)
-target_link_libraries(${LIB_NAME} IO::libio)
+target_link_libraries(${APP_NAME} IO::libio)
 
 find_package(libraw CONFIG REQUIRED)
-target_link_libraries(${LIB_NAME} RAW::libraw)
+target_link_libraries(${APP_NAME} RAW::libraw)
 
 

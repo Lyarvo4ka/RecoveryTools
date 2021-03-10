@@ -4,5 +4,6 @@ add_subdirectory(libio)
 add_subdirectory(libraw)
 add_subdirectory(consoleapp)
 add_subdirectory(libjsonreader)
+add_subdirectory(signaturetestconsole)
 
 project("RecoveryTools")

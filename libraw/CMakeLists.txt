@@ -15,7 +15,7 @@ ADD_DEFINITIONS(-D_UNICODE)
 
 find_package(Boost )
 if(Boost_FOUND)
-        message("BOOST FOUND = " ${Boost_INCLUDE_DIRS})
+ #       message("BOOST FOUND = " ${Boost_INCLUDE_DIRS})
         include_directories(${Boost_INCLUDE_DIRS}) 
 endif()
 

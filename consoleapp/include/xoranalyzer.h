@@ -253,7 +253,7 @@ namespace IO
 
 		}
 
-		void getAllMaxValues()
+		//void getAllMaxValues()
 
 		uint32_t getChunckBufferSize(uint32_t chunck_size, int nChunck, uint32_t xor_size)
 		{
