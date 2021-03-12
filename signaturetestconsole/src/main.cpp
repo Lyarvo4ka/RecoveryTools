@@ -167,8 +167,8 @@ int extract_extension()
 	extExtractor.setHeaderBase(headerBase);
 
 	IO::Finder finder;
-	finder.FindFiles(LR"(e:\49262\FOUND.000\)");
-	finder.add_extension(L"*.chk");
+	finder.FindFiles(LR"(f:\49304\!NoName\!!!!\)");
+	//finder.add_extension(L"*.chk");
 	auto all_files = finder.getFiles();
 	//auto listFiles = getFilesWithoutExtension(all_files);
 
