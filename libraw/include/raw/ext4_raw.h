@@ -511,6 +511,35 @@ namespace RAW
 				: ((len - 0x8000) * block_size_);
 		}
 
+		bool readFirstSectorFromExtent(const uint64_t extent_offset)
+		{
+			DataArray buffer(block_size_);
+			EXTENT_BLOCK *extent_block = (EXTENT_BLOCK *)buffer.data();
+
+			device_->setPosition(extent_offset);
+			device_->ReadData(buffer.data(),buffer.size());
+
+			DataArray data_array(default_block_size);
+			uint64_t offset = 0;
+			uint32_t size = 0;
+			if (extent_block->header.depth == 0) 
+			if (extent_block->header.entries > 0)
+			{
+				offset = volume_offset_ + extent_block->extent[0].PysicalBlock() * block_size_;
+				DataArray sector(default_sector_size);
+				device_->setPosition(offset);
+				device_->ReadData(sector.data(), sector.size());
+
+				const uint32_t ZipHeaderSize = 4;
+				const uint8_t ZipHeader[ZipHeaderSize] = {0x50, 0x4B, 0x03, 0x04};
+
+				if ( memcmp(sector.data() ,ZipHeader , ZipHeaderSize) == 0 )
+					return true;
+
+			}
+			return false;
+
+		}
 		uint64_t saveToFile(const uint64_t block_num, File &target_file)
 		{
 			if (!target_file.isOpen())
