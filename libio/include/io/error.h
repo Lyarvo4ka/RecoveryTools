@@ -106,50 +106,20 @@ namespace IO
 
 
 		public:
-			IOStatus(IOErrorsType error_code, const std::string & error_message , const uint32_t last_error)
-				: error_code_(error_code)
-				, last_error_(last_error)
-				, error_message_(error_message)
-			{
-			}
+			IOStatus(IOErrorsType error_code, const std::string& error_message, const uint32_t last_error);
 
-			IOStatus(IOErrorsType error_code, uint32_t last_error)
-				: error_code_(error_code)
-				, last_error_(last_error)
-			{
-			}
-			IOStatus()
-			{
-
-			}
+			IOStatus(IOErrorsType error_code, uint32_t last_error);
+			IOStatus();
 			static IOStatus OK()
 			{
 				return IOStatus();
 			}
-			bool isOK()
-			{
-				return error_code_ == IOErrorsType::OK;
-			}
-			bool isFailed()
-			{
-				return error_code_ != IOErrorsType::OK;
-			}
-			IOErrorsType code() const
-			{
-				return error_code_;
-			}
-			void setLastError(uint32_t last_error)
-			{
-				last_error_ = last_error;
-			}
-			uint32_t lastError() const
-			{
-				return last_error_;
-			}
-			std::string error_message() const
-			{
-				return error_message_;
-			}
+			bool isOK();
+			bool isFailed();
+			IOErrorsType code() const;
+			void setLastError(uint32_t last_error);
+			uint32_t lastError() const;
+			std::string error_message() const;
 		};
 
 		class IOErrorException
@@ -159,24 +129,13 @@ namespace IO
 			IOStatus error_status_;
 			mutable std::string tmp_str;
 		public:
-			IOErrorException(IOStatus error_status)
-				:error_status_(error_status)
-			{
-
-			}
+			IOErrorException(IOStatus error_status);
 			//IOErrorException()
 			//{
 
 			//}
-			IOStatus getStatus() const
-			{
-				return error_status_;
-			}
-			const char* what() const override
-			{
-				tmp_str = error_status_.error_message() + LastErrorMessage(error_status_.lastError());
-				return tmp_str.c_str();
-			}
+			IOStatus getStatus() const;
+			const char* what() const override;
 		};
 
 

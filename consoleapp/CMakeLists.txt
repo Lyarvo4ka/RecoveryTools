@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
-project("XorAnalyzer" VERSION 0.0.1)
+project("ConsolesApp" VERSION 0.0.1)
 
-set(APP_NAME XorAnalyzer)
 
 #configure_file(
 #        src/config.h.in
@@ -23,15 +22,18 @@ if(Boost_FOUND)
         include_directories(${Boost_INCLUDE_DIRS}) 
 endif()
 
-set(HEADERS 
-        include/xoranalyzer.h 
-)
-#add_executable(${APP_NAME} ${SOURCES} ${HEADERS}) 
-add_executable(ext4_raw src/ext4_raw_main.cpp)
+add_executable(XorAnalyzer src/main_xoranalyzer.cpp include/xoranalyzer.h)
 
+add_executable(ext4_raw 
+                src/ext4_raw_main.cpp  
+                include/consolerawparser.h
+                src/consolerawparser.cpp)
 
+add_executable(fix_dbf src/fix_dbf_main.cpp)
 
-# target_include_directories(${APP_NAME}
+add_executable(FileOffsetsWriter src/fileoffetswrite_main.cpp include/fileoffsetwriter.h)
+
+# target_include_directories(XorAnalyzer
 #     PUBLIC 
 #         $<INSTALL_INTERFACE:include>    
 #         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -40,45 +42,35 @@ add_executable(ext4_raw src/ext4_raw_main.cpp)
 #         ${CMAKE_CURRENT_BINARY_DIR}
 # )
 
-# target_sources(${APP_NAME} PRIVATE
-#                    src/main_xoranalyzer.cpp
-#                    src/xoranalyzer.cpp  
-#  )
-
-#  #target_include_directories(
-#  #       ${APP_NAME}
-#  #       PRIVATE
-#  #       ${CMAKE_CURRENT_SOURCE_DIR}/../lib
-# #)
-# find_package(libio CONFIG REQUIRED)
-# target_link_libraries(${APP_NAME} IO::libio)
-
-# find_package(libraw CONFIG REQUIRED)
-# target_link_libraries(${APP_NAME} RAW::libraw)
-
-##########################################################
-
-target_include_directories(ext4_raw
-    PUBLIC 
-        $<INSTALL_INTERFACE:include>    
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_sources(ext4_raw PRIVATE
-                   src/main_xoranalyzer.cpp
-                   src/xoranalyzer.cpp  
- )
+# target_include_directories(ext4_raw
+#     PUBLIC 
+#         $<INSTALL_INTERFACE:include>    
+#         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#     PRIVATE
+#         ${CMAKE_CURRENT_SOURCE_DIR}/src
+#         ${CMAKE_CURRENT_BINARY_DIR}
+# )
 
  #target_include_directories(
  #       ${APP_NAME}
  #       PRIVATE
  #       ${CMAKE_CURRENT_SOURCE_DIR}/../lib
 #)
-find_package(libio CONFIG REQUIRED)
-target_link_libraries(ext4_raw IO::libio)
 
-find_package(libraw CONFIG REQUIRED)
+target_include_directories(
+       ext4_raw
+       PRIVATE
+       ${CMAKE_CURRENT_SOURCE_DIR}/../lib
+)
+find_package(libio REQUIRED)
+target_link_libraries(ext4_raw IO::libio)
+# target_link_libraries(XorAnalyzer IO::libio)
+# target_link_libraries(fix_dbf IO::libio)
+# target_link_libraries(FileOffsetsWriter IO::libio)
+
+find_package(libraw REQUIRED)
 target_link_libraries(ext4_raw RAW::libraw)
+# target_link_libraries(XorAnalyzer RAW::libraw)
+# target_link_libraries(fix_dbf RAW::libraw)
+
+

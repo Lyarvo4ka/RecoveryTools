@@ -8,11 +8,7 @@ configure_file(
         ${CMAKE_CURRENT_BINARY_DIR}/config.h   
 )
 
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-message("cmake source dir =" ${CMAKE_SOURCE_DIR})
-
+set(CMAKE_DEBUG_POSTFIX d)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -28,24 +24,10 @@ if(Boost_FOUND)
 endif()
 
 
-
-set(HEADERS 
-        include/io/constants.h 
-        include/io/dataarray.h
-        include/io/dbf.h
-        include/io/diskdevice.h
-        include/io/error.h
-        include/io/file.h
-        include/io/finder.h
-        include/io/fs.h
-        include/io/functions.h
-        include/io/iodevice.h
-        include/io/onec.h
-        include/io/physicaldrive.h 
-        include/io/sparsebundle.h
-        include/io/uniqueid.h 
-        include/io/utility.h   
+file(GLOB_RECURSE HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
 )
+
 
 
 add_library(libio STATIC ${SOURCES} ${HEADERS})
@@ -60,15 +42,11 @@ target_include_directories(libio
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+file(GLOB_RECURSE FOUND_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+)
 target_sources(libio PRIVATE 
-        src/dataarray.cpp
-        src/diskdevice.cpp
-        src/error.cpp
-        src/ioengine.cpp 
-        src/file.cpp
-        src/ioengine.cpp
-        src/uniqueid.cpp
-        src/utility.cpp
+        ${FOUND_SOURCES}
 )
 
 install(TARGETS libio EXPORT libioTargets

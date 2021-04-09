@@ -23,18 +23,9 @@ namespace IO
 		uint32_t WriteData(ByteArray data, uint32_t write_size) override;
 
 		uint64_t Size() const override;
-		DeviceInfo getDeviceInfo() const override
-		{
-			return deviceInfo_;
-		}
-		void setIOEngine(IOEnginePTR ioengine_ptr)
-		{
-			io_engine_ = ioengine_ptr;
-		}
-		PhysicalDrivePtr getPhysicalDrive()
-		{
-			return physical_drive_;
-		}
+		DeviceInfo getDeviceInfo() const override;
+		void setIOEngine(IOEnginePTR ioengine_ptr);
+		PhysicalDrivePtr getPhysicalDrive();
 
 		uint32_t ReadDataNotAligned(ByteArray data, uint32_t read_size);
 		uint32_t ReadBlock(ByteArray data, uint32_t read_size);

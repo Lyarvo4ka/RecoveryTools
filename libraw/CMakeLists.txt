@@ -5,6 +5,7 @@ project("libraw" VERSION 0.0.1)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+set(CMAKE_DEBUG_POSTFIX d)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -40,7 +41,8 @@ set(HEADERS
 add_library(libraw STATIC ${SOURCES} ${HEADERS})
 
 target_sources(libraw PRIVATE 
-        src/factories.cpp 
+        src/factories.cpp
+        src/ext4_raw.cpp 
 )
 
 
@@ -53,7 +55,7 @@ target_include_directories(libraw
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-find_package(libio CONFIG REQUIRED)
+find_package(libio REQUIRED)
 target_link_libraries(libraw PUBLIC libio)
 
 install(TARGETS libraw EXPORT librawTargets

@@ -42,19 +42,10 @@ namespace IO
 		void setFileName(const path_string new_filename);
 		path_string getFileName() const;
 		void readFileSize(uint64_t& file_size);
-		DeviceInfo getDeviceInfo() const override
-		{
-			return deviceInfo_;
-		}
+		DeviceInfo getDeviceInfo() const override;
 
-		void setIOEngine(IOEnginePTR new_ioengine)
-		{
-			io_engine_ = new_ioengine;
-		}
-		IOEnginePTR getIOEngine()
-		{
-			return io_engine_;
-		}
+		void setIOEngine(IOEnginePTR new_ioengine);
+		IOEnginePTR getIOEngine();
 	};
 
 	using FilePtr = std::shared_ptr<File>;

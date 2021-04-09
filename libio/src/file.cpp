@@ -143,6 +143,21 @@ namespace IO
 			throw Error::IOErrorException(status);
 	}
 
+	inline DeviceInfo File::getDeviceInfo() const
+	{
+		return deviceInfo_;
+	}
+
+	inline void File::setIOEngine(IOEnginePTR new_ioengine)
+	{
+		io_engine_ = new_ioengine;
+	}
+
+	inline IOEnginePTR File::getIOEngine()
+	{
+		return io_engine_;
+	}
+
 	FilePtr makeFilePtr(const path_string& file_path)
 	{
 		return std::make_shared<File>(file_path);

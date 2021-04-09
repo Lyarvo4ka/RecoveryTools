@@ -62,6 +62,21 @@ namespace IO
 		return physical_drive_->getSize();	// return byte, not sectors
 	}
 
+	inline DeviceInfo DiskDevice::getDeviceInfo() const
+	{
+		return deviceInfo_;
+	}
+
+	inline void DiskDevice::setIOEngine(IOEnginePTR ioengine_ptr)
+	{
+		io_engine_ = ioengine_ptr;
+	}
+
+	inline PhysicalDrivePtr DiskDevice::getPhysicalDrive()
+	{
+		return physical_drive_;
+	}
+
 	 uint32_t DiskDevice::ReadDataNotAligned(ByteArray data, uint32_t read_size)
 	{
 		const auto sector_size = physical_drive_->getBytesPerSector();

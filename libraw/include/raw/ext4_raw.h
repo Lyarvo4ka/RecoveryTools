@@ -224,6 +224,7 @@ namespace RAW
 		uint64_t value_to_cmp_ = 0;
 		IO::path_string offsetsFileName_ = L"extents_offsets.txt";
 		ListExtents listExtents_;
+		uint16_t depth_ = 0;
 	public:
 		ext4_raw(IODevicePtr device)
 			: device_(device)
@@ -233,6 +234,10 @@ namespace RAW
 		void setVolumeOffset(uint64_t new_offset)
 		{
 			volume_offset_ = new_offset;
+		}
+		void setDepth(uint16_t depth)
+		{
+			depth_ = depth;
 		}
 		uint64_t Execute(const uint64_t inode_offset, const path_string target_folder) override
 		{
@@ -284,7 +289,7 @@ namespace RAW
 		bool firstExtentOffsetEqualTo(ByteArray data, uint32_t size)
 		{
 			EXTENT_BLOCK* extent_block = (EXTENT_BLOCK*)(data);
-			if (isValidExtentWithNullDepth(*extent_block))
+			if (isValidExtentWithDepth(*extent_block))
 			{
 				uint64_t first_offset = (uint64_t)extent_block->extent[0].block * block_size_;
 				if (first_offset == value_to_cmp_)
@@ -358,31 +363,8 @@ namespace RAW
 			}
 
 		}
-		void findExtentsWithDepth(uint16_t depth, const path_string & fileName )
-		{
-			File extentsOffset_txt(fileName);
-			extentsOffset_txt.OpenCreate();
-
-			uint64_t offset = 0;
-
-			IO::DataFinder data_finder(device_);
-			data_finder.setSearchSize(block_size_);
-			data_finder.compareFunctionPtr_ = std::bind(&ext4_raw::compareIsValidExtentWithNullDepth, this, std::placeholders::_1, std::placeholders::_2);
-			
-
-			while (true)
-			{
-				if (!data_finder.findFromCurrentToEnd(offset))
-					break;
-				offset = data_finder.getFoundPosition();
-				auto str_text = StringConverter::toString(offset) + "\n";
-				//str_text += std::endl;
-
-				extentsOffset_txt.WriteText(str_text);
-
-				offset += block_size_;
-			}
-		}
+		void findExtentsWithDepth(uint16_t depth, const path_string & fileName , uint64_t start_offset = 0 );
+		
 		std::list<uint64_t> readOffsetsFromFile(const path_string & fileName)
 		{
 			std::list<uint64_t> offsetList;
@@ -442,40 +424,13 @@ namespace RAW
 			return (volume_offset_ + physical_block * block_size_);
 		}
 		
-		uint64_t CalculateExtentSize(const DataArray & block)
-		{
-			EXTENT_BLOCK* extent_block = (EXTENT_BLOCK*)block.data();
+		uint64_t CalculateExtentSizeWith_0Depth(const DataArray& block);
 
-			if (!isValidExtentWithNullDepth(*extent_block))
-				return 0;
+		uint64_t CalculateExtentSize(const DataArray& block);
+		uint64_t CalculateExtentSize(const uint64_t block_num);
 
-			uint64_t extent_size = 0;
-			if (extent_block->header.entries == 1)
-				extent_size = determineSize(extent_block->extent[0].len);
-			if (extent_block->header.entries > MIN_REQUIRE_ENTRIES)
-			{
-				auto first_offset = getOffsetFromPhysicalBlock(extent_block->extent[0].block);
-
-				auto last_extent = extent_block->extent[extent_block->header.entries - 1];
-
-				auto last_offset = getOffsetFromPhysicalBlock(last_extent.block);
-				auto last_size = last_extent.len;
-
-				extent_size = last_offset + determineSize(last_size) - first_offset;
-
-			}
-			return extent_size;
-		}
-
-		uint64_t CalculateExtentSize(const uint64_t block_num)
-		{
-			DataArray extent(block_size_);
-			readExtent(block_num, extent);
-			return CalculateExtentSize(extent);
-
-		}
 		
-		bool isValidExtent(EXTENT_BLOCK& extent_block)
+		bool isValidExtent(const EXTENT_BLOCK& extent_block)
 		{
 			if ((extent_block.header.magic != EXTENT_HEADER_MAGIC) ||
 				(extent_block.header.max != max_extents_in_block_) ||
@@ -484,18 +439,19 @@ namespace RAW
 			}
 			return true;
 		}
-		bool isValidExtentWithNullDepth(EXTENT_BLOCK& extent_block)
+		bool isValidExtentWithDepth(const EXTENT_BLOCK& extent_block , uint16_t depth = 0)
 		{
 			if (isValidExtent(extent_block))
-				if (extent_block.header.depth == 0)
+				if (extent_block.header.depth == depth)
 					return true;
 			return false;
 		}
-		bool compareIsValidExtentWithNullDepth(ByteArray data, uint32_t size)
+		bool compareIsValidExtentWithDepth(ByteArray data, uint32_t size)
 		{
 			EXTENT_BLOCK* extent_block = (EXTENT_BLOCK*)(data);
-			return isValidExtentWithNullDepth(*extent_block);
+			return isValidExtentWithDepth(*extent_block , depth_);
 		}
+
 		void toResize(DataArray & data_array , uint32_t new_size)
 		{
 			if (data_array.size() < new_size) {
@@ -540,65 +496,7 @@ namespace RAW
 			return false;
 
 		}
-		uint64_t saveToFile(const uint64_t block_num, File &target_file)
-		{
-			if (!target_file.isOpen())
-				return 0;
-
-			DataArray buffer(block_size_);
-			EXTENT_BLOCK *extent_block = (EXTENT_BLOCK *)buffer.data();
-
-			uint64_t extent_offset = volume_offset_ + block_num * block_size_;
-			device_->setPosition(extent_offset);
-			device_->ReadData(buffer.data(),buffer.size());
-			
-			if (!isValidExtent(*extent_block))
-				return 0;
-
-			//std::vector<BYTE> data_buff;
-			DataArray data_array(default_block_size);
-			uint64_t offset = 0;
-			uint32_t size = 0;
-			if (extent_block->header.depth == 0) {
-				for (int i = 0; i < extent_block->header.entries; i++) {
-					offset = volume_offset_ + extent_block->extent[i].PysicalBlock() * block_size_;
-
-					size = determineSize(extent_block->extent[i].len);
-
-					toResize(data_array, size);
-
-					if (extent_block->extent[i].len <= 0x8000) 
-					{
-						device_->setPosition(offset);
-						device_->ReadData(data_array.data(), size);
-					}
-					else {
-						memset(data_array.data(), 0x00, size);
-					}
-
-					//extent_block->extent[i].block += 0x10000000;
-					uint64_t target_offset = (uint64_t)extent_block->extent[i].block * block_size_;
-					target_file.setPosition(target_offset);
-					target_file.WriteData(data_array.data(), size);
-				}
-			}
-			else {
-				//File text_file(LR"(e:\48264\offsets.txt)");
-				//text_file.OpenCreate();
-
-				for (int i = 0; i < extent_block->header.entries; i++) {
-					saveToFile(extent_block->extent_index[i].PysicalBlock(), target_file);
-					//auto text = std::to_string(extent_block->extent_index[i].PysicalBlock());
-					//text_file.WriteText(text + "\n");
-					//int x = 0;
-				}
-				//text_file.Close();
-				int k = 1;
-				k = 2;
-
-			}
-			return 0;
-		}
+		uint64_t saveToFile(const uint64_t block_num, File& target_file);
 
 	//	uint64_t SaveRawFile(uint64_t iNode_offset)
 	};

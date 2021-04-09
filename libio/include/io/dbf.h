@@ -3,7 +3,8 @@
 
 #include <windows.h>
 #include "io/constants.h"
-#include "io/iodevice.h"
+#include "io/file.h"
+
 
 //#include "StandartRaw.h"
 
