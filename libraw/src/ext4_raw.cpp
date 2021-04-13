@@ -101,6 +101,9 @@ namespace RAW
 			if (!isValidExtent(*extent_block))
 				return 0;
 
+			//auto text = StringConverter::toString(block_num * block_size_);
+			//txtFile_.WriteText(text + "\n");
+
 			//std::vector<BYTE> data_buff;
 			DataArray data_array(default_block_size);
 			uint64_t offset = 0;
@@ -108,6 +111,8 @@ namespace RAW
 			if (extent_block->header.depth == 0) {
 				for (int i = 0; i < extent_block->header.entries; i++) {
 					offset = volume_offset_ + extent_block->extent[i].PysicalBlock() * block_size_;
+
+
 
 					size = determineSize(extent_block->extent[i].len);
 
@@ -122,6 +127,10 @@ namespace RAW
 						memset(data_array.data(), 0x00, size);
 					}
 
+
+					if (memcmp (data_array.data() , Signatures::bad_sector_marker , Signatures::bad_sector_marker_size) == 0)
+						return 0;
+
 					//extent_block->extent[i].block += 0x10000000;
 					uint64_t target_offset = (uint64_t)extent_block->extent[i].block * block_size_;
 					target_file.setPosition(target_offset);
@@ -135,7 +144,7 @@ namespace RAW
 				for (int i = 0; i < extent_block->header.entries; i++) {
 					saveToFile(extent_block->extent_index[i].PysicalBlock(), target_file);
 					//auto text = std::to_string(extent_block->extent_index[i].PysicalBlock());
-					//text_file.WriteText(text + "\n");
+					//txtFile_.WriteText(text + "\n");
 					//int x = 0;
 				}
 				//text_file.Close();

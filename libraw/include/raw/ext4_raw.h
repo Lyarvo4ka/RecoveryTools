@@ -225,9 +225,11 @@ namespace RAW
 		IO::path_string offsetsFileName_ = L"extents_offsets.txt";
 		ListExtents listExtents_;
 		uint16_t depth_ = 0;
+		IO::File txtFile_;
 	public:
 		ext4_raw(IODevicePtr device)
 			: device_(device)
+			, txtFile_(L"")
 		{
 			max_extents_in_block_ = (block_size_ - sizeof(ext4_extent_header)) / sizeof(ext4_extent);
 		}
@@ -282,7 +284,10 @@ namespace RAW
 		}
 		void setOffsetsFileName(const path_string& offsetsFileName)
 		{
+			txtFile_.Close();
 			offsetsFileName_ = offsetsFileName;
+			txtFile_.setFileName(offsetsFileName_);
+			txtFile_.OpenCreate();
 		}
 
 		// if (first_offset == size_to_cmp)

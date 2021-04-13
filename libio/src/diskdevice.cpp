@@ -10,7 +10,8 @@ namespace IO
 		: physical_drive_(physical_drive)
 		, io_engine_(makeIOEngine())
 	{
-		io_engine_->setTranserSize(physical_drive_->getTransferLength());
+		//io_engine_->setTranserSize(physical_drive_->getTransferLength());
+		io_engine_->setTranserSize(default_block_size);
 		deviceInfo_.deviceTypeName = disk_txt;
 		deviceInfo_.name = physical_drive->getDriveName();
 		
