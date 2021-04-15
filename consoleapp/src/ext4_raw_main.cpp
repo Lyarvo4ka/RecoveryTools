@@ -4,6 +4,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include "raw/quicktime.h"
+
 void searchExtents_main(ConsoleRawParser& consoleExt4Parser , uint16_t depth)
 {
 	auto iodevice = consoleExt4Parser.getDevice();
@@ -129,7 +131,7 @@ int saveZipFilesWithExt4Extent(int argc, char* argv[])
 	ext4_raw.exe 1. soruce 2. path_extents.txt 3. target_folder
 	*/
 	int argc_new = argc;
-	IO::path_string target_folder;
+	IO::path_string target_folder = LR"(l:\20Tb\)";
 
 	if (argc_new == ConsoleRawParser::param_count + 1)
 	{
@@ -148,19 +150,91 @@ int saveZipFilesWithExt4Extent(int argc, char* argv[])
 
 		//IO::path_string target_folder = LR"(g:\result\)";
 		//uint64_t offset = 0x4c0202f000;
+		auto blockSize = ext4_recovery.getBlockSize();
+		IO::DataArray extent(blockSize);
+
+		//std::string textToFind = "buh_75";
+		//IO::path_string fileName = IO::path_string(textToFind.begin(), textToFind.end());
+
+		//IO::path_string txtPath = LR"(d:\PaboTa\20Tb\)" + fileName + L".txt";
+		//IO::File text_txt(txtPath);
+		//text_txt.OpenCreate();
+
+		uint64_t office05 = 3191326949376;
+		uint64_t office02 = 3191327145984;  // 06_02_2021 --> 3191326941184; 
+			
+
+
+		//auto block_number = office02 / 4096;
+		//auto targetfilename = IO::offsetToPath(target_folder, office02, L".zip");
+		//IO::File target_file(targetfilename);
+		//target_file.OpenCreate();
+		//ext4_recovery.saveToFile(block_number, target_file);
+
+		//target_file.Close();
+
+
 		auto listOffsets = ext4_recovery.readOffsetsFromFile(offsetsFileName);
+
 		for (const auto& offset : listOffsets)
 		{
-			if (ext4_recovery.readFirstSectorFromExtent(offset))
-			{
-				std::cout  << "FOUND " << offset <<std::endl;
-				auto block_number = offset / 4096;
-				auto targetfilename = IO::offsetToPath(target_folder, offset, L".zip");
-				IO::File target_file(targetfilename);
-				target_file.OpenCreate();
-				ext4_recovery.saveToFile(block_number, target_file);
-				int k = 1;
-			}
+			ext4_recovery.readExtent(offset / blockSize, extent);
+			RAW::EXTENT_BLOCK* extent_block = (RAW::EXTENT_BLOCK*)extent.data();
+			if (extent_block->header.depth == 0) 
+				if (extent_block->header.entries > 0)
+				{
+					auto target_offset = extent_block->extent[0].PysicalBlock() * blockSize;
+					auto data_size = ext4_recovery.CalculateExtentSize(offset / blockSize);
+					//////////////////////////////////////////////////
+					auto block_number = offset / 4096;
+					auto targetfilename = IO::offsetToPath(target_folder, offset, L".zip");
+					IO::File target_file(targetfilename);
+					target_file.OpenCreate();
+					ext4_recovery.saveToFile(block_number, target_file);
+					////////////////////////////////
+					//IO::DataArray sector(512);
+					//sourceDevice->setPosition(target_offset);
+					//sourceDevice->ReadData(sector.data(), sector.size()); 
+
+					//uint32_t pos = 0;
+					//if (RAW::findTextTnBlock(sector, textToFind, pos))
+					//{
+					//	std::cout << "FOUND " << offset << std::endl;
+					//	auto text = RAW::StringConverter::toString(offset);
+					//	text_txt.WriteText(text + "\n");
+					//}
+
+
+					int k = 1;
+				}
+
+
+			//auto data_size = ext4_recovery.CalculateExtentSize(offset / blockSize);
+			//if (data_size > 230000000 && data_size < 238000000)
+			//{
+	//			std::cout << "FOUND " << offset << std::endl;
+	//			auto text = RAW::StringConverter::toString(offset);
+	//			text_txt.WriteText(text + "\n");
+				//auto block_number = offset / 4096;
+				//auto targetfilename = IO::offsetToPath(target_folder, offset, L".zip");
+				//IO::File target_file(targetfilename);
+				//target_file.OpenCreate();
+				//ext4_recovery.saveToFile(block_number, target_file);
+
+			//}
+
+			//if (ext4_recovery.readFirstSectorFromExtent(offset))
+			//{
+			//	std::cout  << "FOUND " << offset <<std::endl;
+			//	auto text = RAW::StringConverter::toString(offset);
+			//	zipHeader_txt.WriteText(text + "\n");
+			//	//auto block_number = offset / 4096;
+			//	//auto targetfilename = IO::offsetToPath(target_folder, offset, L".zip");
+			//	//IO::File target_file(targetfilename);
+			//	//target_file.OpenCreate();
+			//	//ext4_recovery.saveToFile(block_number, target_file);
+			//	//int k = 1;
+			//}
 
 		}
 	}
@@ -177,7 +251,8 @@ int main(int argc, char* argv[])
 	//	searchExtents_main(ext4ConsoleParser, 0);
 	//}
 
-	saveFilesWithExt4Extent(argc, argv);
+	//saveFilesWithExt4Extent(argc, argv);
+	saveZipFilesWithExt4Extent(argc, argv);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";
