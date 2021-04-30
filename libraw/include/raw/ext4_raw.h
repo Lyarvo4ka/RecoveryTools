@@ -198,6 +198,20 @@ namespace RAW
 
 	};
 
+	inline auto calcMaxExtentsInBlock(const uint32_t block_size)
+	{
+		return (block_size - sizeof(ext4_extent_header)) / sizeof(ext4_extent);
+	}
+	inline auto isValidExtent(const EXTENT_BLOCK & extent_block, const uint32_t maxExtentsInBlock)
+	{
+		if ((extent_block.header.magic != EXTENT_HEADER_MAGIC) ||
+			(extent_block.header.max != maxExtentsInBlock) ||
+			(extent_block.header.entries > maxExtentsInBlock)) {
+			return false;
+		}
+		return true;
+	}
+
 	inline ExtentHandle findWithMaxEntries(const std::list<ExtentHandle>& list_handles)
 	{
 		auto find_iter = std::max_element(begin(list_handles), end(list_handles),
@@ -211,6 +225,29 @@ namespace RAW
 		return ExtentHandle{ 0, 0, 0 };
 	}
 
+	class ExtentSearchValues
+	{
+		uint32_t block_size_ = 4096;
+		uint16_t maxDepth_ = 0;
+		uint16_t depth_ = 0;
+		uint32_t max_extents_in_block_ = 0;
+		public:
+			ExtentSearchValues(uint32_t block_size = 4096);
+			void setMaxDepth(uint16_t maxDepth);
+			uint16_t getDepth() const;
+			bool cmpExtentIfLessMaxDepth(ByteArray data, uint32_t size);
+	};
+
+	class ExtentsDepthByLevel
+	{
+		IO::path_string targetFolder_;
+		std::vector<IO::File> arrayFiles_;
+		public:
+			ExtentsDepthByLevel(IO::path_string targetFolder);
+			void createFile(const uint16_t depth);
+			void createFiles(const uint16_t number);
+			void addOffset(uint64_t offset, uint16_t depth);
+	};
 
 
 	class ext4_raw
@@ -231,7 +268,7 @@ namespace RAW
 			: device_(device)
 			, txtFile_(L"")
 		{
-			max_extents_in_block_ = (block_size_ - sizeof(ext4_extent_header)) / sizeof(ext4_extent);
+			max_extents_in_block_ = calcMaxExtentsInBlock(block_size_);
 		}
 		uint32_t getBlockSize() const;
 		void setVolumeOffset(uint64_t new_offset);
@@ -250,6 +287,34 @@ namespace RAW
 		ListExtents readListExtents(std::list<uint64_t>& listOffsets);
 
 		void searchExtends(uint64_t block_start);
+		void searchExtents(uint64_t start_offset , const IO::path_string & target_folder , uint16_t max_depth)
+		{
+			IO::DataFinder data_finder(device_);
+			data_finder.setSearchSize(block_size_);
+
+			ExtentSearchValues extSearchValues(block_size_);
+			extSearchValues.setMaxDepth(2);
+
+			data_finder.compareFunctionPtr_ = std::bind(&ExtentSearchValues::cmpExtentIfLessMaxDepth, extSearchValues, std::placeholders::_1, std::placeholders::_2);
+
+			ExtentsDepthByLevel extDepth(target_folder);
+			
+			uint64_t offset = start_offset;	
+
+			while (true)
+			{
+				if (!data_finder.findFromCurrentToEnd(offset))
+					break;
+				offset = data_finder.getFoundPosition();
+				std::cout << offset << std::endl << extSearchValues.getDepth();
+				extDepth.addOffset(offset , extSearchValues.getDepth());
+				
+
+
+				offset += block_size_;
+			}
+
+		}
 		void findExtentsWithDepth(uint16_t depth, const path_string & fileName , uint64_t start_offset = 0 );
 		
 		std::list<uint64_t> readOffsetsFromFile(const path_string& fileName);

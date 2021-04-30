@@ -145,6 +145,8 @@ namespace RAW
 		}
 
 	}
+	
+
 	void ext4_raw::findExtentsWithDepth(uint16_t depth, const path_string & fileName , uint64_t start_offset )
 	{
 		File extentsOffset_txt(fileName);
@@ -419,4 +421,72 @@ namespace RAW
 
 
    
+	ExtentSearchValues::ExtentSearchValues(uint32_t block_size)
+		: block_size_(block_size)
+	{
+		max_extents_in_block_ = calcMaxExtentsInBlock(block_size_);
+	}
+
+	void ExtentSearchValues::setMaxDepth(uint16_t maxDepth)
+	{
+		maxDepth_ = maxDepth;
+	}
+
+	uint16_t ExtentSearchValues::getDepth() const
+	{
+		return depth_;
+	}
+
+	bool ExtentSearchValues::cmpExtentIfLessMaxDepth(ByteArray data, uint32_t size)
+	{
+		EXTENT_BLOCK* extent_block = (EXTENT_BLOCK*)(data);
+		//const EXTENT_BLOCK& extent_block = (const EXTENT_BLOCK&)data;
+		if (extent_block->header.depth <= maxDepth_)
+			if (isValidExtent(*extent_block, max_extents_in_block_))
+			{
+				depth_ = extent_block->header.depth;
+				return true;
+			}
+
+		return false;
+	}
+
+	ExtentsDepthByLevel::ExtentsDepthByLevel(IO::path_string targetFolder)
+		:targetFolder_(targetFolder)
+	{
+
+	}
+
+	void ExtentsDepthByLevel::createFile(const uint16_t depth)
+	{
+		IO::path_string filepath = IO::addBackSlash(targetFolder_) + std::to_wstring(depth) + L".depth";
+		IO::File file(filepath);
+		file.OpenCreate();
+		arrayFiles_.emplace_back(file);
+	}
+
+	void ExtentsDepthByLevel::createFiles(const uint16_t depth)
+	{
+		std::size_t new_size = depth + 1;
+		if (arrayFiles_.size() < new_size)
+		{
+			for (std::size_t i = 0; i < new_size; ++i)
+			{
+				//if ( i+1 < new_size )
+
+			}
+		}
+	}
+
+	void ExtentsDepthByLevel::addOffset(uint64_t offset, uint16_t depth)
+	{
+		createFiles(depth);
+		auto str_text = StringConverter::toString(offset) + "\n";
+		arrayFiles_.at(depth).WriteText(str_text);
+		int k = 1; 
+		k = 2;
+
+		// if file 
+	}
+
 }

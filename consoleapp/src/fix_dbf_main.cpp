@@ -12,15 +12,13 @@ void fixAllDbfFiles(const IO::path_string & folder)
 	{
 		IO::fixDBF(filename);
 	}
-
-
-	//fixDBF
 }
 
 int wmain(int argc, wchar_t* argv[])
 {
-	auto foldername = LR"(d:\PaboTa\49529\to_fix\)";
-	fixAllDbfFiles(foldername);
+	IO::path_string foldername = LR"(d:\PaboTa\49529\to_fix\)";
+
+	//fixAllDbfFiles(foldername);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";

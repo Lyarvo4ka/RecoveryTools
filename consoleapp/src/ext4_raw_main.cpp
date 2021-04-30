@@ -244,15 +244,19 @@ int saveZipFilesWithExt4Extent(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	//ConsoleRawParser ext4ConsoleParser;
-	//ext4ConsoleParser.parse(argc, argv);
-	//if (ext4ConsoleParser.isValid())
-	//{
-	//	searchExtents_main(ext4ConsoleParser, 0);
-	//}
+	ConsoleRawParser ext4ConsoleParser;
+	ext4ConsoleParser.parse(argc, argv);
+	if (ext4ConsoleParser.isValid())
+	{
+		const uint16_t maxDepth = 3;
+		auto device = ext4ConsoleParser.getDevice();
+		device->Open(IO::OpenMode::OpenRead);
+		RAW::ext4_raw ext4Recovery(device);
+		ext4Recovery.searchExtents(ext4ConsoleParser.getOffset(), ext4ConsoleParser.getTargetValue(), maxDepth);
+	}
 
 	//saveFilesWithExt4Extent(argc, argv);
-	saveZipFilesWithExt4Extent(argc, argv);
+	//saveZipFilesWithExt4Extent(argc, argv);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";
