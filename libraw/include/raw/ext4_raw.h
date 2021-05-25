@@ -287,34 +287,7 @@ namespace RAW
 		ListExtents readListExtents(std::list<uint64_t>& listOffsets);
 
 		void searchExtends(uint64_t block_start);
-		void searchExtents(uint64_t start_offset , const IO::path_string & target_folder , uint16_t max_depth)
-		{
-			IO::DataFinder data_finder(device_);
-			data_finder.setSearchSize(block_size_);
-
-			ExtentSearchValues extSearchValues(block_size_);
-			extSearchValues.setMaxDepth(2);
-
-			data_finder.compareFunctionPtr_ = std::bind(&ExtentSearchValues::cmpExtentIfLessMaxDepth, extSearchValues, std::placeholders::_1, std::placeholders::_2);
-
-			ExtentsDepthByLevel extDepth(target_folder);
-			
-			uint64_t offset = start_offset;	
-
-			while (true)
-			{
-				if (!data_finder.findFromCurrentToEnd(offset))
-					break;
-				offset = data_finder.getFoundPosition();
-				std::cout << offset << std::endl << extSearchValues.getDepth();
-				extDepth.addOffset(offset , extSearchValues.getDepth());
-				
-
-
-				offset += block_size_;
-			}
-
-		}
+		void searchExtents(uint64_t start_offset, const IO::path_string& target_folder, uint16_t max_depth);
 		void findExtentsWithDepth(uint16_t depth, const path_string & fileName , uint64_t start_offset = 0 );
 		
 		std::list<uint64_t> readOffsetsFromFile(const path_string& fileName);

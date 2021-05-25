@@ -252,7 +252,7 @@ int main(int argc, char* argv[])
 		auto device = ext4ConsoleParser.getDevice();
 		device->Open(IO::OpenMode::OpenRead);
 		RAW::ext4_raw ext4Recovery(device);
-		ext4Recovery.searchExtents(ext4ConsoleParser.getOffset(), ext4ConsoleParser.getTargetValue(), maxDepth);
+		ext4Recovery.searchExtents(ext4ConsoleParser.getOffset(), ext4ConsoleParser.getTargetValue(), maxDepth);  
 	}
 
 	//saveFilesWithExt4Extent(argc, argv);

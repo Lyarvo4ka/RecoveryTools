@@ -1,4 +1,5 @@
 #include "io/file.h"
+#include <iostream>
 
 namespace IO
 {
@@ -10,11 +11,13 @@ namespace IO
 		, io_engine_(makeIOEngine())
 	{
 		deviceInfo_.deviceTypeName = file_txt;
+		std::cout << "File created " << std::endl;
 	}
 
 	File::~File()
 	{
 		Close();
+		std::cout << "File closed " << std::endl;
 	}
 
 	bool File::OpenRead()
