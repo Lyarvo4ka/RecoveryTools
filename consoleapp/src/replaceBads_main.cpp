@@ -13,9 +13,9 @@ int wmain(int argc, wchar_t* argv[])
 
 		//fixAllDbfFiles(foldername);
 		IO::replaceBadsFromOtherFile(withBads, withoutBads, target);
-
+		 
 		_CrtDumpMemoryLeaks();
-		std::cout << std::endl << " FINISHED ";
+		std::cout << std::endl << " FINISHED "; 
 	}
 	else
 	{
