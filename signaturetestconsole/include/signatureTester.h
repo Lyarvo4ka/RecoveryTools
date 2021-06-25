@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../libjsonreader/include/jsonreader.h"
+#include "extensionbase.h"
 
 #include <map>
 #include "io/file.h"
@@ -102,7 +102,9 @@ public:
 	{
 
 
-		auto extension = getExtension(filename);
+		auto extension_tmp = getExtension(filename);
+
+		auto extension = boost::algorithm::to_lower_copy(extension_tmp);
 
 		auto listFormatName = extensionsBase_.find(extension);
 		auto listFileStruct = getListFileStructFromListFormatName(listFormatName);

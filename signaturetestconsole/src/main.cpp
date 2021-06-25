@@ -5,6 +5,7 @@
 
 //#include "../JsonReader/JsonReader.h"
 //#include "../JsonReader/SignatureReader.h"
+#include "extensionextractor.h"
 
 #include "io/Finder.h"
 #include "raw/AbstractRaw.h"
@@ -170,10 +171,10 @@ int test_signatures()
 
 	////////////////
 
-	IO::path_string folderToTest = LR"(e:\49262\FOUND.000\)";
+	IO::path_string folderToTest = LR"(g:\49888\)";
 
 	IO::Finder finder;
-	finder.add_extension(L".mp3");
+	//finder.add_extension(L".mp3");
 	finder.FindFiles(folderToTest);
 
 	SignatureTester signTester;
@@ -203,7 +204,7 @@ int main(int argc, char* argv[])
 {
 	QCoreApplication a(argc, argv);
 
-	extract_extension();
+	test_signatures();
 
 
 	qDebug() << "Finished.";

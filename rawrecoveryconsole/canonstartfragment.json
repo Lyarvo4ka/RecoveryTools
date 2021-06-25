@@ -1,0 +1,17 @@
+{
+  "CanonStartFragment":
+  { 
+    "algorithmName": "CanonStartFragment",
+    "category": "video",
+
+		"header":
+          [
+            {
+                "textdata":"ftyp",
+                "offset": 4
+            }            
+            
+          ],
+          "extension": ".mov"
+	}
+}

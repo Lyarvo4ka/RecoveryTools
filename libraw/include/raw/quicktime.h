@@ -430,6 +430,7 @@ namespace RAW
 	};
 
 	const uint32_t OffsetToFileSize = 2234;
+	const uint32_t Offset_29CA = 0x29CA;
 
 	class CanonStartFragment
 		: public StandartRaw
@@ -442,7 +443,7 @@ namespace RAW
 		}
 		uint64_t SaveRawFile(File& target_file, const uint64_t start_offset) override
 		{
-			auto file_size_offset = start_offset + OffsetToFileSize;
+			auto file_size_offset = start_offset + Offset_29CA;
 			uint32_t fullFileSize = 0;
 			this->setPosition(file_size_offset);
 			this->ReadData((ByteArray)&fullFileSize, sizeof(uint32_t));
@@ -471,7 +472,8 @@ namespace RAW
 			toBE32(expected_block.block_size);
 			memcpy(expected_block.block_type, s_mdat, qt_keyword_size);
 
-			offset = start_offset + firstPartSize;
+			//offset = start_offset + firstPartSize;
+			offset = 0;
 			DataArray buffer(default_block_size);
 			
 			while (offset < this->getSize())
