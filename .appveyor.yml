@@ -1,31 +1,7 @@
-image: Visual Studio 2019   # на этом VM-образе установлены все Visual Studio с 2008 по 2015
-
-shallow_clone: true              # копируем только последний коммит, без истории (git clone --depth 1)
-
-matrix:
-    fast_finish: false           # не останавливаемся после возникновения ошибки в каком-то из заданий
-
-platform:
-    # будем гонять пока CI на amd64 
-    - x64
-    # - x86
-
-configuration:
-    # ... и в дебажной, и в релизной конфигурациях ...
-    - Debug
-    - Release
-
-before_build:
-    - cmake -G "Visual Studio 16 2019 Win64" .
-
-install:
-
-    # - appveyor DownloadFile <url> -FileName <local-file>
-    # - 7z e -y <local-file> -o<local-dir>
+image: Visual Studio 2019   
 
 
 build_script:
-    - cmd: >-
       mkdir build
       cd build
       cmake c:\develop\src\RecoveryTools -G "Visual Studio 16"
