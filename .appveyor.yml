@@ -1,8 +1,9 @@
 image: Visual Studio 2019   
 
-#clone_folder :
+
 
 build_script:
+ - cmd: >-
       mkdir build
       cd build
       cmake .. -G "Visual Studio 16"
