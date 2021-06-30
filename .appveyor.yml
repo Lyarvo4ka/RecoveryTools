@@ -25,12 +25,11 @@ install:
 
 
 build_script:
-    # скрипт сборки проекта:
-  cmd: >-
-  mkdir build
-  cd build
-  cmake c:\develop\src\RecoveryTools -G "Visual Studio 16"
-  cmake build . --config "Debug"
+    - cmd: >-
+      mkdir build
+      cd build
+      cmake c:\develop\src\RecoveryTools -G "Visual Studio 16"
+      cmake build . --config "Debug"
 
 # test_script:
 #     # скрипт тестирования проекта:
