@@ -99,3 +99,31 @@ find_package(libjsonreader CONFIG REQUIRED)
 target_link_libraries(${APP_NAME} JSON::libjsonreader)
 
 
+
+# if(WIN32)
+#    set(_fmt ZIP)
+
+set(CPACK_GENERATOR ZIP)
+set(CPACK_SOURCE_GENERATOR ZIP)
+set(CPACK_PACKAGE_VENDOR "Your Company")
+set(CPACK_PACKAGE_CONTACT "Your Name")
+
+install(TARGETS ${APP_NAME}
+   RUNTIME
+   DESTINATION bin
+   COMPONENT applications)
+
+
+INCLUDE(CPack)
+
+# set(CPACK_GENERATOR NSIS)
+# set(CPACK_PACKAGE_NAME "RawRecoveryConsole")
+# set(CPACK_PACKAGE_VENDOR "CMake.org")
+# set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "CPack Component Installation Example")
+# set(CPACK_PACKAGE_VERSION "1.0.0")
+# set(CPACK_PACKAGE_INSTALL_DIRECTORY "CPack Component Example")
+# SET(CPACK_NSIS_MODIFY_PATH ON)
+
+# INCLUDE(CPack)
+
+
