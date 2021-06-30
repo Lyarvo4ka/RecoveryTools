@@ -7,7 +7,7 @@ build_script:
       mkdir build
       cd build
       cmake .. -G "Visual Studio 16"
-      cmake build . --config "Debug"
+      cmake --build . --config "Debug"
 
 # test_script:
 #     # скрипт тестирования проекта:
