@@ -98,11 +98,11 @@ message("QTDIR " $ENV{QTDIR})
 #===================== LINKING LIBRARIES =======================#
 target_link_libraries(${LIB_NAME} Qt5::Core)
 
-find_package(libio CONFIG REQUIRED)
-target_link_libraries(${LIB_NAME} IO::libio)
+# find_package(libio CONFIG REQUIRED)
+target_link_libraries(${LIB_NAME} libio)
 
-find_package(libraw CONFIG REQUIRED)
-target_link_libraries(${LIB_NAME} RAW::libraw)
+# find_package(libraw CONFIG REQUIRED)
+target_link_libraries(${LIB_NAME} libraw)
 
 
 #===================== INSTALL TARGETS =======================#

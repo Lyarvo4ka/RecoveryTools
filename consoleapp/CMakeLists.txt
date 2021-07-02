@@ -63,15 +63,15 @@ target_include_directories(
        PRIVATE
        ${CMAKE_CURRENT_SOURCE_DIR}/../lib
 )
-find_package(libio REQUIRED)
-target_link_libraries(ext4_raw IO::libio)
-target_link_libraries(ReplaceBads IO::libio)
+#find_package(libio REQUIRED)
+target_link_libraries(ext4_raw libio)
+target_link_libraries(ReplaceBads libio)
 # target_link_libraries(XorAnalyzer IO::libio)
-target_link_libraries(fix_dbf IO::libio)
+target_link_libraries(fix_dbf libio)
 # target_link_libraries(FileOffsetsWriter IO::libio)
 
-find_package(libraw REQUIRED)
-target_link_libraries(ext4_raw RAW::libraw)
+#find_package(libraw REQUIRED)
+target_link_libraries(ext4_raw libraw)
 # target_link_libraries(XorAnalyzer RAW::libraw)
 # target_link_libraries(fix_dbf RAW::libraw)
 

@@ -89,13 +89,13 @@ target_include_directories(${APP_NAME}
 #===================== LINKING LIBRARIES =======================#
 target_link_libraries(${APP_NAME} Qt5::Core)
 
-find_package(libio CONFIG REQUIRED)
-target_link_libraries(${APP_NAME} IO::libio)
+#find_package(libio CONFIG REQUIRED)
+target_link_libraries(${APP_NAME} libio)
 
-find_package(libraw CONFIG REQUIRED)
-target_link_libraries(${APP_NAME} RAW::libraw)
+#find_package(libraw CONFIG REQUIRED)
+target_link_libraries(${APP_NAME} libraw)
 
-find_package(libjsonreader CONFIG REQUIRED)
-target_link_libraries(${APP_NAME} JSON::libjsonreader)
+#find_package(libjsonreader CONFIG REQUIRED)
+target_link_libraries(${APP_NAME} libjsonreader)
 
 

@@ -48,9 +48,13 @@ target_sources(libio PRIVATE
         ${FOUND_SOURCES}
 )
 
+message( "CMAKE_INSTALL_INCLUDEDIR = "${CMAKE_INSTALL_INCLUDEDIR} )
+message( "CMAKE_INSTALL_LIBDIR = "${CMAKE_INSTALL_LIBDIR} )
+
 install(TARGETS libio EXPORT libioTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
         INCLUDES DESTINATION include
 )
 
@@ -59,5 +63,6 @@ install(FILES ${HEADERS} DESTINATION include/io/)
 install(EXPORT libioTargets
         FILE libioConfig.cmake
         NAMESPACE IO::
+        
         DESTINATION lib/cmake/libio
 )

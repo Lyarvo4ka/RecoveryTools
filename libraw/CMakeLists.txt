@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 set(LIB_NAME libraw)
 project(${LIB_NAME} VERSION 0.0.1)
 
+#add_dependencies(${LIB_NAME} IO::libio)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -34,6 +35,7 @@ target_sources(${LIB_NAME} PRIVATE
         ${FOUND_SOURCES}
 )
 
+
 target_include_directories(${LIB_NAME}
     PUBLIC 
         $<INSTALL_INTERFACE:include>    
@@ -43,7 +45,7 @@ target_include_directories(${LIB_NAME}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-find_package(libio REQUIRED)
+#find_package(libio REQUIRED)
 target_link_libraries(${LIB_NAME} PUBLIC libio)
 
 install(TARGETS ${LIB_NAME} EXPORT librawTargets
