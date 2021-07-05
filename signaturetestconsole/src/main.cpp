@@ -5,7 +5,6 @@
 
 //#include "../JsonReader/JsonReader.h"
 //#include "../JsonReader/SignatureReader.h"
-#include "extensionextractor.h"
 
 #include "io/Finder.h"
 #include "raw/AbstractRaw.h"
@@ -112,34 +111,6 @@ inline void ReadSignatures(SignatureReader & signatureReader, RAW::HeaderBase::P
 }
 
 
-#include "signatureTester.h"
-
-int extract_extension()
-{
-
-	ExtensionExtractor extExtractor;
-
-	IO::path_string singFolder = LR"(d:\develop\RecoveryProjects\SignatureTestConsole\signatures\)";
-	SignatureReader signReader;
-	signReader.loadAllSignatures(singFolder, L".json");
-
-	auto headerBase = std::make_shared<RAW::HeaderBase>();
-	for (const auto& jsonFileStruct : signReader.getAllSignatures())
-	{
-		headerBase->addFileFormat(toUniqueFileStruct(jsonFileStruct));
-	}
-
-	extExtractor.setHeaderBase(headerBase);
-
-	IO::Finder finder;
-	finder.FindFiles(LR"(f:\49304\!NoName\!!!!\)");
-	//finder.add_extension(L"*.chk");
-	auto all_files = finder.getFiles();
-	//auto listFiles = getFilesWithoutExtension(all_files);
-
-	extExtractor.extract_extensions(all_files);
-	return 0;
-}
 
 int test_signatures()
 {
@@ -171,10 +142,10 @@ int test_signatures()
 
 	////////////////
 
-	IO::path_string folderToTest = LR"(g:\49888\)";
+	IO::path_string folderToTest = LR"(e:\49262\FOUND.000\)";
 
 	IO::Finder finder;
-	//finder.add_extension(L".mp3");
+	finder.add_extension(L".mp3");
 	finder.FindFiles(folderToTest);
 
 	SignatureTester signTester;
@@ -204,7 +175,7 @@ int main(int argc, char* argv[])
 {
 	QCoreApplication a(argc, argv);
 
-	test_signatures();
+	extract_extension();
 
 
 	qDebug() << "Finished.";

@@ -11,13 +11,13 @@ namespace IO
 		, io_engine_(makeIOEngine())
 	{
 		deviceInfo_.deviceTypeName = file_txt;
-		std::cout << "File created " << std::endl;
+		//std::cout << "File created " << std::endl;
 	}
 
 	File::~File()
 	{
 		Close();
-		std::cout << "File closed " << std::endl;
+		//std::cout << "File closed " << std::endl;
 	}
 
 	bool File::OpenRead()

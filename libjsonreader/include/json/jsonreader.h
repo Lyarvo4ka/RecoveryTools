@@ -156,7 +156,7 @@ void ReadJsonFIle(const QByteArray & byte_data, QList<JsonFileStruct> & parsedRe
 	{
 		JsonFileStruct jsonFileStruct;
 		jsonFileStruct.name = signature_name;
-		qInfo() << "name = " << signature_name << endl;
+		qInfo() << "name = " << signature_name << Qt::endl;
 
 
 		//	QVariant
@@ -209,7 +209,7 @@ void ReadJsonFIle(const QByteArray & byte_data, QList<JsonFileStruct> & parsedRe
 			parsedResult.append(jsonFileStruct);
 
 		}
-		qInfo() << endl;
+		qInfo() << Qt::endl;
 	}
 
 }

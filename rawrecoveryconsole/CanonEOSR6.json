@@ -1,0 +1,19 @@
+{
+  "CanonEOSR6":
+  {  
+    "description": "1. First search ftyp header. 2. Read full file size from offset 0x29CA(10698). 3. Find mday (full size - header size) ",
+    "algorithmName": "CanonEOSR6",
+    "category": "video",
+
+		"header":
+          [
+            {
+                "textdata":"ftyp",
+                "offset": 4
+            }            
+            
+          ],
+    "extension": ".mov",
+    "offsetToFullFileSize": 10698
+	}
+}

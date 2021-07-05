@@ -50,7 +50,7 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 	//factory_manager.Register("qt_fragment", std::make_unique<IO::QTFragmentRawFactory>());
 	//initAudioFactoryManager(factory_manager);
 	//factory_manager.Register("go_pro", std::make_unique<RAW::GoProRawFactory>());
-	factory_manager.Register("CanonStartFragment", std::make_unique<RAW::CanonStartFragmentFactory>());
+	factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
 
 	//factory_manager.Register("pln", std::make_unique<RAW::PLNRawFactory>());
 	//factory_manager.Register("pln_bl", std::make_unique<RAW::PLN_BLRawFactory>());
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 			auto file_struct = signatureFinder.findHeader(start_offset, header_offset);
 			if (!file_struct)
 			{
-				qInfo() << endl << endl << endl << "No more signatures found. Press any key to exit.";
+				qInfo() << Qt::endl << Qt::endl << Qt::endl << "No more signatures found. Press any key to exit.";
 				break;
 			}
 			qInfo() << "Found signature for [" << file_struct->getName().c_str() << "] file.";
@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
 
 						auto dst_size = dst_file->Size();
 						dst_file->Close();
-						qInfo() << "Successfully saved " << target_size << "(bytes)" << endl << endl;
+						qInfo() << "Successfully saved " << target_size << "(bytes)" << Qt::endl << Qt::endl;
 
 						uint64_t jump_size = default_sector_size;
 
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					qInfo() << "Not specified for " << QString::fromStdString(file_struct->getName()) << "continue search for other signatures." << endl;
+					qInfo() << "Not specified for " << QString::fromStdString(file_struct->getName()) << "continue search for other signatures." << Qt::endl;
 					start_offset += default_sector_size;
 				}
 				if (raw_algorithm)
