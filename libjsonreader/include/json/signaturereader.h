@@ -106,6 +106,8 @@ public:
 				for (auto formatName : formatNameArray)
 				{
 					extension.listFormatName.append(formatName.toString());
+					std::cout << formatName.toString().toStdString() << std::endl;
+
 				}
 			}
 

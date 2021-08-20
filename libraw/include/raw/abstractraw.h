@@ -88,11 +88,14 @@ namespace RAW
 			auto buffer = makeDataArray(block_size_);
 			uint32_t bytes_read = 0;
 			uint32_t result_offset = 0;
+			uint32_t bytesToRead = 0;
+
 
 			while (offset < file_size)
 			{
 				device_->setPosition(offset);
-				bytes_read = device_->ReadData(buffer->data(), block_size_);
+				bytesToRead = IO::calcBlockSize(offset, file_size, block_size_);
+				bytes_read = device_->ReadData(buffer->data(), bytesToRead);
 				if (bytes_read == 0)
 				{
 					printf("Error read drive\r\n");

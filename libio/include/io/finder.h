@@ -153,6 +153,10 @@ namespace IO
 		{
 			return rootFolder_;
 		}
+		auto numberOfFiles() const
+		{
+			return files_.size();
+		}
 		path_list getFiles() const
 		{
 			return files_;
@@ -246,10 +250,13 @@ namespace IO
 		void Find(DirectoryNode::Ptr folder_node)
 		{
 			path_string current_folder = folder_node->getFullPath();
-			path_string mask_folder(addBackSlash(current_folder) + mask_all);
+			path_string mask_folder = addBackSlash(current_folder);
+			mask_folder += mask_all;
+//			std::wcout << mask_folder << std::endl;
 			WIN32_FIND_DATA findData = { 0 };
 
 			HANDLE hFindFile = FindFirstFile(mask_folder.c_str(), &findData);
+			//auto error = ::GetLastError();
 			if (hFindFile != INVALID_HANDLE_VALUE)
 			{
 				do

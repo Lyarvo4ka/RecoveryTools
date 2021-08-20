@@ -75,7 +75,7 @@ void createManyExcelFiles()
 
 int wmain(int argc, wchar_t* argv[])
 {
-	IO::path_string foldername = LR"(d:\PaboTa\49529\to_fix\)";
+	IO::path_string foldername = LR"(f:\50134\to_fix\)";
 	//createManyExcelFiles();
 
 	fixAllDbfFiles(foldername);

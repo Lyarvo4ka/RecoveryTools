@@ -21,7 +21,7 @@ namespace RAW
 
 	struct ZoomH6Header
 	{
-		char header_text[22];
+		char header_text[20];
 		char folder_name[11];
 	};
 
@@ -98,7 +98,6 @@ namespace RAW
 			if (!file_ptr->Open(OpenMode::Create))
 				return nullptr;
 
-
 			this->add_file(file_ptr, pRiffHeader->size);
 			return file_ptr;
 		}
@@ -168,8 +167,12 @@ namespace RAW
 			}
 			ZoomH6Header *pZoomHeader = (ZoomH6Header*)data_array.data();
 			std::string folder_name(pZoomHeader->folder_name);
+			folder_name.erase(std::remove(folder_name.begin(), folder_name.end(), ' '), folder_name.end());
 
-			return folder_name;
+			static uint32_t counter = 0;
+			++counter;
+
+			return folder_name + "-" + std::to_string(counter);
 		}
 		path_string createFolder(const path_string & folder_name, const path_string & new_folder)
 		{
@@ -186,6 +189,33 @@ namespace RAW
 			return folder_path;
 
 		}
+
+		uint64_t findAllFilesSize(const uint64_t start_offset)
+		{
+			DataArray data_array(this->block_size());
+
+			const uint8_t ZOOM_H6_header[] = { 0x5A ,0x4F,0x4F,0x4D,0x20,0x48,0x36 };
+			const int ZOOM_H6_header_size = SIZEOF_ARRAY(ZOOM_H6_header);
+			uint64_t position = start_offset;
+
+			while (position < device_->Size())
+			{
+				ReadBlock(data_array, position);
+				for (uint32_t i = 0; i < data_array.size(); i += default_sector_size)
+				{
+					if (memcmp(data_array.data() + i, ZOOM_H6_header, ZOOM_H6_header_size) == 0)
+					{
+						uint64_t full_size = position + i - start_offset;
+						return full_size;
+					}
+				}
+
+
+				position += data_array.size();
+			}
+			return 0;
+		}
+
 		ZoomFiles createZoomFiles(const uint64_t start_offset, const path_string & zoom_folder, const path_string & zoomFileName)
 		{
 			ZoomFiles zoomFiles(zoom_folder);
@@ -194,11 +224,41 @@ namespace RAW
 			DataArray data_array(this->block_size());
 			uint64_t position = start_offset;
 
+			uint32_t numFiles = 0;
+
+			for (numFiles = 0; numFiles < MAXZOOMFILES; ++numFiles)
+			{
+				bytesRead = ReadBlock(data_array, position);
+				if (bytesRead == 0)
+					break;
+
+				riff_header_struct* pRiffHeader = (riff_header_struct*)data_array.data();
+				if (memcmp(pRiffHeader->riff_name, riff_header, riff_header_size) != 0)
+					break;
+
+				position += this->block_size();
+
+			}
+			position = start_offset;
+
+			auto full_size = findAllFilesSize(start_offset);
+			auto file_size = full_size;
+			if (numFiles > 0)
+				file_size = full_size / (uint64_t)numFiles ;
+
+
+
+			position = start_offset;
 			for (uint32_t fileNumber = 0; fileNumber < MAXZOOMFILES; ++fileNumber)
 			{
 				bytesRead = ReadBlock(data_array, position);
 				if (bytesRead == 0)
 					break;
+
+
+				riff_header_struct* pRiffHeader = (riff_header_struct*)data_array.data();
+				if (pRiffHeader->size == 0)
+					pRiffHeader->size = file_size;
 
 				auto file = zoomFiles.createFile(data_array, zoomFileName, fileNumber);
 				if (!file)

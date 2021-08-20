@@ -1,17 +1,39 @@
 #include <QtCore/QCoreApplication>
 
-#include "../libjsonreader/include/jsonreader.h"
-#include "../libjsonreader/include/signaturereader.h"
 
-//#include "../JsonReader/JsonReader.h"
-//#include "../JsonReader/SignatureReader.h"
+
 
 #include "io/Finder.h"
 #include "raw/AbstractRaw.h"
+#include "json/signaturereader.h"
+#include "extensionbase.h"
+#include "signatureTester.h"
+
 
 #include <filesystem>
 
 namespace fs = std::filesystem;
+
+
+std::wstring toWstring_cast(const std::string& s)
+{
+    int len;
+    int slength = (int)s.length() ;
+    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
+    std::wstring r(len, L'\0');
+    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, &r[0], len);
+    return r;
+}
+
+std::string toString_cast(const std::wstring& s)
+{
+    int len;
+    int slength = (int)s.length() + 1;
+    len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0); 
+    std::string r(len, '\0');
+    WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, &r[0], len, 0, 0); 
+    return r;
+}
 
 void rename_to_bad_file(const IO::path_string & file_path)
 {
@@ -112,16 +134,19 @@ inline void ReadSignatures(SignatureReader & signatureReader, RAW::HeaderBase::P
 
 
 
-int test_signatures()
+int test_signatures(const IO::path_string & folderToTest)
 {
-	////////////////////
-	IO::path_string singFolder = LR"(d:\develop\RecoveryProjects\SignatureTestConsole\signatures\)";
+	auto singature_path = fs::current_path() / "signatures";
+	std::cout << singature_path.string() << std::endl;
+	//singature_path += "signatures";
 	SignatureReader signReader;
-	signReader.loadAllSignatures(singFolder, L".json");
+	signReader.loadAllSignatures(singature_path.wstring(), L".json");
 
-	IO::path_string extFolder = LR"(d:\develop\RecoveryProjects\SignatureTestConsole\extensions\)";
+	auto extension_path = fs::current_path() / "extensions";
+	std::cout << extension_path.string() << std::endl;
+	//extension_path += "extensions";
 	ExtensionReader extReader;
-	extReader.loadAllExtensions(extFolder, L".json");
+	extReader.loadAllExtensions(extension_path.wstring(), L".json");
 
 	ExtensionBase extBase;
 	auto listJsonExtension = extReader.getAllSignatures();
@@ -142,11 +167,13 @@ int test_signatures()
 
 	////////////////
 
-	IO::path_string folderToTest = LR"(e:\49262\FOUND.000\)";
 
 	IO::Finder finder;
-	finder.add_extension(L".mp3");
+	//finder.add_extension(L".mp3");
 	finder.FindFiles(folderToTest);
+
+	std::wcout << folderToTest << std::endl;
+	std::cout << "Found " << finder.numberOfFiles() << std::endl;
 
 	SignatureTester signTester;
 	signTester.setExtensionBase(extBase);
@@ -155,9 +182,23 @@ int test_signatures()
 
 	for (auto fileToTest : finder.getFiles())
 	{
+		//std::wcout << fileToTest << " ";
 		signTester.testSigantures(fileToTest);
+		//std::wcout<< std::endl;
 	}
 
+	auto unkownListExt = signTester.getUnknownExtensions();
+
+	IO::File fileTxt(L"unknown.txt");
+	fileTxt.OpenCreate();
+
+	for (const auto & ext : unkownListExt )
+	{
+		std::string writeText = ext;
+		writeText += "\r\n";
+
+		fileTxt.WriteText(writeText);
+	}
 
 
 
@@ -169,13 +210,58 @@ int test_signatures()
 
 
 
-
+#include "io\utility.h"
 
 int main(int argc, char* argv[])
 {
 	QCoreApplication a(argc, argv);
+	if (argc == 2)
+	{
+		const auto folder_value = argv[1];
+		std::string folder_string = folder_value;
+		IO::path_string folderToTest = toWstring_cast(folder_string);
 
-	extract_extension();
+		setlocale(LC_ALL, "Russian");
+		try
+		{
+			test_signatures(folderToTest);
+
+		}
+		catch (const Error::IOErrorException& ex)
+		{
+			std::cout << "Caught exception " << ex.what() << std::endl;
+		}
+		catch (...)
+		{
+			std::cout << "Caught unknown exception" << std::endl;
+		}
+
+	}
+	else
+		std::cout << "Wrong params" << std::endl;
+	//	IO::Finder finder;
+	////finder.add_extension(L".mp3");
+	//finder.FindFiles(folderToTest);
+
+	//SignatureTester signTester;
+	//signTester.setExtensionBase(extBase);
+	//signTester.setSignatureBase(signBase);
+
+	//IO::DataArray buffer(default_sector_size);
+
+	//for (auto fileToTest : finder.getFiles())
+	//{
+	//	IO::File file(fileToTest);
+	//	file.OpenRead();
+	//	if (file.Size() > default_sector_size)
+	//	{
+	//		file.ReadData(buffer);
+	//		file.Close();
+
+	//		if (IO::isBlockContainsValue(buffer.data() , buffer.size(), 0x00) )
+	//			rename_to_bad_file(fileToTest);
+	//	}
+	//}
 
 
 	qDebug() << "Finished.";

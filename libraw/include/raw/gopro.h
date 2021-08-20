@@ -617,11 +617,11 @@ namespace RAW
 					}
 
 				}
-				//moovBlock_ = makeDataArray(mp4Moov_.getHandle().size());
-				//device_->setPosition(mp4Moov_.getHandle().offset());
-				//device_->ReadData(moovBlock_->data(), moovBlock_->size());
-				//target_file.setPosition(firstPartSize);
-				//target_file.WriteData(moovBlock_->data(), moovBlock_->size());
+				moovBlock_ = makeDataArray(mp4Moov_.getHandle().size());
+				device_->setPosition(mp4Moov_.getHandle().offset());
+				device_->ReadData(moovBlock_->data(), moovBlock_->size());
+				target_file.setPosition(firstPartSize);
+				target_file.WriteData(moovBlock_->data(), moovBlock_->size());
 
 
 				uint64_t full_file_size = firstPartSize + mp4Moov_.getHandle().size();

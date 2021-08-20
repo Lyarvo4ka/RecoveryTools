@@ -146,7 +146,7 @@ namespace RAW
 
 	}
 
-	inline void ext4_raw::searchExtents(uint64_t start_offset, const IO::path_string& target_folder, uint16_t max_depth)
+	void ext4_raw::searchExtents(uint64_t start_offset, const IO::path_string& target_folder, uint16_t max_depth)
 	{
 		IO::DataFinder data_finder(device_);
 		data_finder.setSearchSize(block_size_);

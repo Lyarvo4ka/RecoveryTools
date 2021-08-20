@@ -1,5 +1,7 @@
 
 #include "signatureTester.h"
+#include "extensionextractor.h"
+#include "json/signaturereader.h"
 
 int extract_extension()
 {

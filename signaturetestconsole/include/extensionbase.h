@@ -1,10 +1,13 @@
 #pragma once
 
+#include <map>
 #include "raw/AbstractRaw.h"
+#include "json/jsonreader.h"
 
 using FormatName = std::string;
 using ListFormatName = std::list<FormatName>;
 using ExtensionName = std::string;
+using ExtensionsList = std::list<ExtensionName>;
 
 class ExtensionBase
 {

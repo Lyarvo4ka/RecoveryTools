@@ -30,6 +30,9 @@ namespace fs = std::filesystem;
 
 #include "raw\quicktime.h"
 #include "io\diskdevice.h"
+#include "raw/zoomh6raw.h"
+#include "raw/gopro.h"
+#include "raw/canonfragment.h"
 
 void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 {
@@ -47,10 +50,10 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 
 
 	//initKeysFactoryManager(factory_manager);
-	//factory_manager.Register("qt_fragment", std::make_unique<IO::QTFragmentRawFactory>());
+	factory_manager.Register("canonfragment", std::make_unique<RAW::QTFragmentRawFactory>());
 	//initAudioFactoryManager(factory_manager);
 	//factory_manager.Register("go_pro", std::make_unique<RAW::GoProRawFactory>());
-	factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
+	//factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
 
 	//factory_manager.Register("pln", std::make_unique<RAW::PLNRawFactory>());
 	//factory_manager.Register("pln_bl", std::make_unique<RAW::PLN_BLRawFactory>());
@@ -204,18 +207,14 @@ int main(int argc, char *argv[])
 
 			if (file_struct->getAlgorithType().compare("special") == 0)
 			{
-				//RAW::ZoomH6Raw zoomH6Raw(src_device);
-				//	auto bytesWritten = zoomH6Raw.Execute(header_offset, target_folder);
-					//if (bytesWritten == 0)
-					//	break;
+				RAW::ZoomH6Raw zoomH6Raw(src_device);
+					auto bytesWritten = zoomH6Raw.Execute(header_offset, target_folder);
+					if (bytesWritten == 0)
+						break;
 					start_offset += default_sector_size;
 			}
 			else
 			{
-
-
-
-
 				auto raw_factory = factory_manager.Lookup(file_struct->getAlgorithmName());
 				RAW::RawAlgorithm* raw_algorithm = nullptr;
 				if (!raw_factory)
@@ -241,7 +240,9 @@ int main(int argc, char *argv[])
 					auto target_file = IO::offsetToPath(target_folder, header_offset, file_struct->getExtension(), default_sector_size);
 					auto dst_file = IO::makeFilePtr(target_file);
 					if (dst_file->Open(IO::OpenMode::Create))
+
 					{
+
 						auto target_size = raw_algorithm->SaveRawFile(*dst_file, header_offset);
 
 						if (target_size == 0)

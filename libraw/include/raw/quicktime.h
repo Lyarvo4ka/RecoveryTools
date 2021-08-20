@@ -124,10 +124,25 @@ namespace RAW
 		return findTextTnBlock(data_array, textToFind, position, SearchDirection::kBackward);
 	}
 
+	const uint8_t moov_signToFind[] = { 0x6D, 0x6F, 0x6F, 0x76, 0x00, 0x00, 0x00 };
+	const int moov_signToFind_size = SIZEOF_ARRAY(moov_signToFind);
 
 	inline bool findMOOV_signature(const DataArray& data_array, uint32_t& position)
 	{
-		return findTextTnBlock(data_array, s_moov, position);
+		//return findTextTnBlock(data_array, s_moov, position);
+		//uint32_t temp_pos = 0;
+		for (uint32_t pos = 0; pos < data_array.size() - moov_signToFind_size; ++pos)
+		{
+
+			if (memcmp(data_array.data() + pos, moov_signToFind, moov_signToFind_size) == 0)
+			{
+				position = pos;
+				return true;
+			}
+		}
+		return false;
+
+
 	}
 
 	class QtHandle

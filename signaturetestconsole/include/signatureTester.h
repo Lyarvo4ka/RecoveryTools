@@ -14,7 +14,13 @@ class SignatureTester
 {
 	ExtensionBase extensionsBase_;
 	SignatureBase signatureBase_;
+	ExtensionsList unknownListExtensions_;
+
 public:
+	ExtensionsList getUnknownExtensions() const
+	{
+		return unknownListExtensions_;
+	}
 	void setExtensionBase(const ExtensionBase& extensionsBase)
 	{
 		extensionsBase_ = extensionsBase;
@@ -46,11 +52,12 @@ public:
 			k = 2;
 
 		}
+		std::wcout << std::endl;
 	}
 	void renameToBadfile(const IO::path_string& filename)
 	{
 		rename_file(filename, L".bad_file");
-		std::cout << " - BAD" << std::endl;
+	//	std::cout << " - BAD" << std::endl;
 
 	}
 	ExtensionName getExtension(const IO::path_string& filename)
@@ -107,11 +114,22 @@ public:
 		auto extension = boost::algorithm::to_lower_copy(extension_tmp);
 
 		auto listFormatName = extensionsBase_.find(extension);
-		auto listFileStruct = getListFileStructFromListFormatName(listFormatName);
-
-		if (!testSignatureWithList(filename, listFileStruct))
+		if (!listFormatName.empty())
 		{
-			renameToBadfile(filename);
+
+			auto listFileStruct = getListFileStructFromListFormatName(listFormatName);
+
+			if (!testSignatureWithList(filename, listFileStruct))
+			{
+				renameToBadfile(filename);
+			}
+		}
+		else
+		{ 
+			auto it = std::find(unknownListExtensions_.begin(), unknownListExtensions_.end(), extension);
+			if (it == unknownListExtensions_.end())
+				unknownListExtensions_.emplace_back(extension);
+
 		}
 
 
