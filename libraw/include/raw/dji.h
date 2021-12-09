@@ -2,7 +2,12 @@
 
 #include "raw\gopro.h"
 
-class TempFile
+namespace RAW
 {
-    
+
+
+    class TempFile
+    {
+
+    }
 }

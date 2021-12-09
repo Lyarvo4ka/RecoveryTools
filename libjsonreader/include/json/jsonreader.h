@@ -19,7 +19,7 @@
 using namespace IO;
 
 const QString algorithmName_txt = "algorithmName";
-const QString algorithType_txt = "algorithType";
+const QString algorithType_txt = "algorithmType";
 const QString category_txt = "category";
 
 const QString header_txt = "header";

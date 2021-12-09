@@ -1,0 +1,15 @@
+{
+    "go_pro":{ 
+    "algorithmName": "go_pro",
+		"header":
+          [
+			      {
+                "textdata":"ftyp",
+                "offset": 4
+            }         
+            
+          ],
+          "extension": ".mov"
+        }
+	
+}

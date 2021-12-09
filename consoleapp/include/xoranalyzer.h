@@ -9,6 +9,53 @@
 
 using namespace IO;
 
+	void xor_files(const path_string& filename1, const path_string& filename2, const path_string& resultfilename)
+	{
+		File file1(filename1);
+		file1.OpenRead();
+
+		File file2(filename2);
+		file2.OpenRead();
+
+		File result(resultfilename);
+		result.OpenCreate();
+
+		uint64_t offset = 0;
+
+		uint64_t minFileSize = file1.Size();
+		if (minFileSize > file2.Size())
+			minFileSize = file2.Size();
+
+		uint32_t block_size = default_block_size;
+		DataArray buff1(default_block_size);
+		DataArray buff2(default_block_size);
+		DataArray resBuff(default_block_size);
+
+		while (offset < minFileSize)
+		{
+			block_size = calcBlockSize(offset, minFileSize, default_block_size);
+			file1.setPosition(offset);
+			file1.ReadData(buff1.data(), block_size);
+
+			file2.setPosition(offset);
+			file2.ReadData(buff2.data(), block_size);
+			
+
+			for (uint32_t i = 0; i < block_size; ++i)
+			{
+				resBuff[i] = buff1[i] ^ buff2[i];
+
+			}
+
+			result.WriteData(resBuff.data(), block_size);
+
+
+			offset += block_size;
+		}
+
+
+	}
+
 	const int BYTE_SIZE = 256;
 
 	uint64_t NumBytesForBlock(DWORD block_size)

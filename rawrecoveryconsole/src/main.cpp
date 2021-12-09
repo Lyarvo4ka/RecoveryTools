@@ -50,9 +50,9 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 
 
 	//initKeysFactoryManager(factory_manager);
-	factory_manager.Register("canonfragment", std::make_unique<RAW::QTFragmentRawFactory>());
+	//factory_manager.Register("canonfragment", std::make_unique<RAW::QTFragmentRawFactory>());
 	//initAudioFactoryManager(factory_manager);
-	//factory_manager.Register("go_pro", std::make_unique<RAW::GoProRawFactory>());
+	factory_manager.Register("go_pro", std::make_unique<RAW::GoProRawFactory>());
 	//factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
 
 	//factory_manager.Register("pln", std::make_unique<RAW::PLNRawFactory>());

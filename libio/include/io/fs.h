@@ -12,6 +12,54 @@ namespace fs = std::filesystem;
 
 namespace IO
 {
+	inline path_string getOnlyNameFromPath(const path_string &filePath)
+	{
+		fs::path fsPath(filePath); 
+		return fsPath.stem().generic_wstring();
+	}
+
+	inline std::vector<path_string> split(const path_string& s, wchar_t delimiter)
+	{
+		std::vector<path_string> tokens;
+		std::wstring token;
+		std::wistringstream tokenStream(s);
+		while (std::getline(tokenStream, token, delimiter))
+		{
+			tokens.emplace_back(token);
+		}
+		return tokens;
+	}
+
+	enum DATE_VAL_ORDER {nYYYY , nMM  , nDD  , nCOUNT };
+	struct DateStruct
+	{
+		path_string year;
+		path_string month;
+		path_string day;
+	};
+
+	inline void moveToDateFolder(const path_string & filePath, const path_string & target_folder)
+	{
+		path_string dateName = getOnlyNameFromPath(filePath);
+		wchar_t * delimiter = L"-";
+		auto dateTokents = split(dateName , *delimiter);
+		DateStruct dateStruct;
+		if (dateTokents.size() >=  nCOUNT)
+		{
+			dateStruct.year = dateTokents[nYYYY];
+			dateStruct.month = dateTokents[nMM];
+			dateStruct.day = dateTokents[nDD];
+
+			path_string newPath = target_folder + addBackSlash(dateStruct.year) + addBackSlash(dateStruct.month) /*+ addBackSlash(dateStruct.day)*/;
+			fs::create_directories(newPath);
+			fs::path sourcePath(filePath);
+			newPath += sourcePath.filename().generic_wstring();
+			fs::rename(filePath, newPath);
+		}
+
+
+		
+	}
 
 	class DirectoryNode;
 

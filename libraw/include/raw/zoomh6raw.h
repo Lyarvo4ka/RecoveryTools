@@ -9,9 +9,9 @@ namespace RAW
 {
 
 /*
-	"1. Читаем клестер. Файл проекта *.hprj".
-	"2. Дальше должны бить заголовки wav файлов, оперделяем сколько заголовков сколько и у нас файлов.".
-	"3. Сохраняем файлы первый файл имеет 2 кластера, остальные 1 кластер."
+	"1. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ *.hprj".
+	"2. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ wav пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.".
+	"3. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 2 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ."
 */
 	const char zoom_h6[] = { 0x5A , 0x4F , 0x4F , 0x4D , 0x20 , 0x48 , 0x36 , 0x20 };
 	const uint32_t zoom_h6_size = SIZEOF_ARRAY(zoom_h6);
@@ -193,6 +193,7 @@ namespace RAW
 		uint64_t findAllFilesSize(const uint64_t start_offset)
 		{
 			DataArray data_array(this->block_size());
+			uint32_t byteToRead = 0;
 
 			const uint8_t ZOOM_H6_header[] = { 0x5A ,0x4F,0x4F,0x4D,0x20,0x48,0x36 };
 			const int ZOOM_H6_header_size = SIZEOF_ARRAY(ZOOM_H6_header);
@@ -200,7 +201,10 @@ namespace RAW
 
 			while (position < device_->Size())
 			{
-				ReadBlock(data_array, position);
+				byteToRead = calcBlockSize(position, device_->Size(), this->block_size());
+				device_->setPosition(position);
+				device_->ReadData(data_array.data(), byteToRead);
+
 				for (uint32_t i = 0; i < data_array.size(); i += default_sector_size)
 				{
 					if (memcmp(data_array.data() + i, ZOOM_H6_header, ZOOM_H6_header_size) == 0)
@@ -220,6 +224,7 @@ namespace RAW
 		{
 			ZoomFiles zoomFiles(zoom_folder);
 			uint32_t bytesRead = 0;
+			uint32_t byteToRead = 0;
 			uint32_t bytesWritten = 0;
 			DataArray data_array(this->block_size());
 			uint64_t position = start_offset;
@@ -228,9 +233,14 @@ namespace RAW
 
 			for (numFiles = 0; numFiles < MAXZOOMFILES; ++numFiles)
 			{
-				bytesRead = ReadBlock(data_array, position);
-				if (bytesRead == 0)
+				if (position >= device_->Size())
 					break;
+
+				byteToRead = calcBlockSize(position, device_->Size(), this->block_size());
+				
+
+				device_->setPosition(position);
+				bytesRead = device_->ReadData(data_array.data(), byteToRead);
 
 				riff_header_struct* pRiffHeader = (riff_header_struct*)data_array.data();
 				if (memcmp(pRiffHeader->riff_name, riff_header, riff_header_size) != 0)
@@ -238,13 +248,17 @@ namespace RAW
 
 				position += this->block_size();
 
+
 			}
 			position = start_offset;
 
 			auto full_size = findAllFilesSize(start_offset);
+			if (full_size == 0)
+				full_size = device_->Size() - start_offset;
 			auto file_size = full_size;
+			auto firstFileSize = full_size / 2;
 			if (numFiles > 0)
-				file_size = full_size / (uint64_t)numFiles ;
+				file_size = firstFileSize / 2;
 
 
 
@@ -258,7 +272,10 @@ namespace RAW
 
 				riff_header_struct* pRiffHeader = (riff_header_struct*)data_array.data();
 				if (pRiffHeader->size == 0)
-					pRiffHeader->size = file_size;
+					if (fileNumber == 0)
+						pRiffHeader->size = firstFileSize;
+					else
+						pRiffHeader->size = file_size;
 
 				auto file = zoomFiles.createFile(data_array, zoomFileName, fileNumber);
 				if (!file)

@@ -73,12 +73,21 @@ void createManyExcelFiles()
 
 }
 
+#include "io/fs.h"
+
 int wmain(int argc, wchar_t* argv[])
 {
-	IO::path_string foldername = LR"(f:\50134\to_fix\)";
+	IO::path_string foldername = LR"(f:\video\)";
 	//createManyExcelFiles();
 
-	fixAllDbfFiles(foldername);
+	IO::Finder finder;
+	finder.FindFiles(foldername);
+	for (const auto& fileName : finder.getFiles())
+	{
+		IO::moveToDateFolder(fileName, foldername);
+	}
+
+	//fixAllDbfFiles(foldername);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";

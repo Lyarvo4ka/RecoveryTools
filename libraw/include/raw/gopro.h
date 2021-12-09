@@ -10,13 +10,14 @@
 #include <filesystem>
 
 #include "io/functions.h"
+#include "io/entropy.h"
 
 namespace fs = std::filesystem;
 
 namespace RAW
 {
 	const uint32_t GP_ID_SIZE = 34;
-	const uint32_t GP_ID_OFFSET = 256;
+	const uint32_t GP_ID_OFFSET = 163;
 
 	const uint32_t default_nulls_boder = 230;//187;
 	const uint32_t default_number_together = 16;
@@ -510,7 +511,7 @@ namespace RAW
 	class GP_Analyzer
 	{
 		IODevicePtr device_;
-		uint32_t cluster_size_ = 131072;
+		uint32_t cluster_size_ = 32768;
 		GoProData::Ptr mp4_;
 		GoProData::Ptr lrv_;
 		MoovData mp4Moov_;
@@ -600,9 +601,34 @@ namespace RAW
 					device_->setPosition(lrv_cur_pos);
 					device_->ReadData(cluster.data(), cluster.size());
 					if (lrvMoov_.cmpWithTableOffset(cluster))
+					{
 						cluster_map.at(i) = 1;
+					}
+					else
+					{
+						auto entropy = IO::calcEntropy(cluster.data(), cluster.size());
+						if (entropy < 5 )
+							cluster_map.at(i) = 1;
+					}
 					lrv_cur_pos += cluster_size_;
 				}
+
+				for (std::size_t i = 0; i < cluster_map.size(); ++i)
+				{
+					if (cluster_map.at(i) == 1)
+					{
+						for (int j = 0; j < 16; ++j)
+						{
+							auto pos = i + j;
+							if (pos < cluster_map.size())
+								cluster_map.at(pos) = 1;
+						}
+						i += 16;
+					}
+					
+				}
+
+
 
 				auto mp4_offset = start_offset;
 				for (auto i = 0; i < cluster_map.size(); ++i)

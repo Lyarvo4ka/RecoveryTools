@@ -34,6 +34,9 @@ add_executable(fix_dbf src/fix_dbf_main.cpp)
 add_executable(FileOffsetsWriter src/fileoffetswrite_main.cpp include/fileoffsetwriter.h)
 add_executable(ReplaceBads src/replaceBads_main.cpp)
 
+add_executable(FleshCollector src/fleshcollector_main.cpp
+                include/fleshcollector.h)
+
 # target_include_directories(XorAnalyzer
 #     PUBLIC 
 #         $<INSTALL_INTERFACE:include>    
@@ -66,8 +69,9 @@ target_include_directories(
 #find_package(libio REQUIRED)
 target_link_libraries(ext4_raw libio)
 target_link_libraries(ReplaceBads libio)
-# target_link_libraries(XorAnalyzer IO::libio)
+target_link_libraries(XorAnalyzer libio)
 target_link_libraries(fix_dbf libio)
+target_link_libraries(FleshCollector libio)
 # target_link_libraries(FileOffsetsWriter IO::libio)
 
 #find_package(libraw REQUIRED)

@@ -90,6 +90,8 @@ namespace IO
 		if (result == Error::IOErrorsType::OK)
 			return bytes_read;
 
+		auto lastError = ::GetLastError();
+
 		throw Error::IOErrorException(makeErrorStatus(*this, result));
 	}
 
