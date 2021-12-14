@@ -1,6 +1,7 @@
 #pragma once
 
 #include "io/file.h"
+#include "io/finder.h"
 
 #include <map>
 
@@ -16,8 +17,8 @@ struct MarkerData
 
 class FleshCollector
 {
-    uint64_t maxImageSize_ = (uint64_t)128 * 1024 * 1024 * 1024 ;
-    IO::File dumpFile_;
+    uint64_t maxImageSize_ = (uint64_t)128 * 1024 * 1024 * 1024;
+    IO::path_string dumpsFolder_;
     uint32_t pageSize_ = 18592;
     uint32_t markerOffset_ = 1024;
 
@@ -25,17 +26,22 @@ class FleshCollector
     const uint32_t numSectors = 16;
     const uint32_t imagePageSize = 1024 * numSectors;
 
-    std::map<uint32_t , bool> imageMap_;
+    std::map<uint32_t, bool> imageMap_;
 public:
-    FleshCollector(const IO::path_string & dumpFileName )
-    :dumpFile_(dumpFileName)
+    FleshCollector(const IO::path_string& dumpFolder)
+        :dumpsFolder_(dumpFolder)
     {
-        
+
     }
 
     uint32_t getMarker(const IO::DataArray& page)
     {
         MarkerData* pMarkers = (MarkerData*)(page.data() + markerOffset_);
+        if (pMarkers->marker1 == 0xFF)
+            if (pMarkers->marker2 == 0xFF)
+                if (pMarkers->marker3 == 0xFF)
+                    if (pMarkers->marker4 == 0xFF)
+                        return 0xFFFFFFFF;
 
         uint8_t marker3 = pMarkers->marker3 & 0b0111'1111;
         uint32_t marker1 = pMarkers->marker1;
@@ -52,51 +58,69 @@ public:
         }
     }
 
-    uint64_t SaveImage(const IO::path_string & imageFileName)
+    uint64_t SaveImage(const IO::path_string& imageFileName)
     {
-        dumpFile_.OpenRead();
-
         IO::File imageFile(imageFileName);
-        imageFile.OpenCreate();
+        imageFile.OpenWrite();
 
         uint64_t dumpOffset = 0x0;
         IO::DataArray dumpPage(pageSize_);
         IO::DataArray imagePage(imagePageSize);
 
-        while (dumpOffset < dumpFile_.Size())
+        IO::Finder finder;
+        finder.add_extension(L".dump");
+        finder.FindFiles(dumpsFolder_);
+
+        auto listFiles = finder.getFiles();
+
+
+        for (const auto & dumpFilename : listFiles)
         {
+            IO::File dumpFile(dumpFilename);
+            dumpFile.OpenRead();
+            dumpOffset = 0x0;
 
-            dumpFile_.setPosition(dumpOffset);
-            dumpFile_.ReadData(dumpPage);
-
-            auto marker = getMarker(dumpPage);
-            uint64_t imageOffset = (uint64_t)marker * imagePageSize;
-            if (imageOffset < maxImageSize_)
+            while (dumpOffset < dumpFile.Size())
             {
-                uint8_t marker4 = dumpPage[markerOffset_ + 3];
 
-                dumpToImage(dumpPage, imagePage);
+                dumpFile.setPosition(dumpOffset);
+                dumpFile.ReadData(dumpPage);
 
-                imageFile.setPosition(imageOffset);
+                auto marker = getMarker(dumpPage);
 
-                auto findIter = imageMap_.find(marker4);
-                if (findIter == imageMap_.end())
+
+
+                uint64_t imageOffset = (uint64_t)marker * imagePageSize;
+                if (imageOffset < maxImageSize_)
                 {
-                    if (marker4 == 0x10)
-                        imageMap_.insert(std::make_pair(marker, true));
+                    uint8_t marker4 = dumpPage[markerOffset_ + 3];
 
-                    imageFile.WriteData(imagePage.data(), imagePage.size());
-                }
-                else
-                    if (marker4 == 0x10)
+                    dumpToImage(dumpPage, imagePage);
+
+                    imageFile.setPosition(imageOffset);
+
+                    auto findIter = imageMap_.find(marker);
+                    if (findIter == imageMap_.end())
+                    {
+                        if (marker4 == 0x10)
+                            imageMap_.insert(std::make_pair(marker, true));
+
                         imageFile.WriteData(imagePage.data(), imagePage.size());
+                    }
+                    else
+                        if (marker4 == 0x10)
+                        {
+                            imageFile.WriteData(imagePage.data(), imagePage.size());
+                        }
+                
 
-            
+
+
+                }
                 dumpOffset += pageSize_;
             }
         }
-       
-        
+
 
 
 
