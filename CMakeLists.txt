@@ -9,4 +9,6 @@ add_subdirectory(consoleapp)
 add_subdirectory(signaturetestconsole)
 add_subdirectory(rawrecoveryconsole)
 
+add_subdirectory(RawRecovery)
+
 project("RecoveryTools")

@@ -1,5 +1,5 @@
 #include "IO\utility.h"
-#include "zlib.h"
+//#include "zlib.h"
 
 int IO::AcronisDecompress::decode_block(const uint64_t start_offset, const uint64_t end_offset, DataArray & dst_data_array)
 {
@@ -10,7 +10,9 @@ int IO::AcronisDecompress::decode_block(const uint64_t start_offset, const uint6
 	file_.ReadData(src_data_array.data(), src_data_array.size());
 
 
-	uLongf dst_size = dst_data_array.size();
-	auto ires = uncompress(dst_data_array.data(), &dst_size, src_data_array.data(), src_data_array.size());
-	return ires;
+	//uLongf dst_size = dst_data_array.size();
+	//auto ires = uncompress(dst_data_array.data(), &dst_size, src_data_array.data(), src_data_array.size());
+	//return ires;
+
+	return 0;
 }

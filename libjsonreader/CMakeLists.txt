@@ -30,8 +30,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_PREFIX_PATH $ENV{QTDIR})
-find_package(Qt5Core REQUIRED)
-#find_package(Qt5Widgets REQUIRED)
+
+find_package(
+  QT NAMES Qt6 Qt5
+  COMPONENTS Core 
+  REQUIRED) 
+
+find_package(
+  Qt${QT_VERSION_MAJOR}
+  COMPONENTS Core 
+  REQUIRED) 
 
 #=================== INCLUSION OF Project Files ====================#
 set(FORMS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/forms")
@@ -96,7 +104,7 @@ message("QTDIR " $ENV{QTDIR})
 
 
 #===================== LINKING LIBRARIES =======================#
-target_link_libraries(${LIB_NAME} Qt5::Core)
+target_link_libraries(${LIB_NAME} Qt${QT_VERSION_MAJOR}::Core)
 
 # find_package(libio CONFIG REQUIRED)
 target_link_libraries(${LIB_NAME} libio)

@@ -1,0 +1,6 @@
+#pragma once
+
+#define PROGNAME '"$$TARGET"'
+#define PROGVERSION '"$$VERSION"'
+#define PROGCAPTION '"$$TARGET v"'
+#define SOFTDEVELOPER '"$$QMAKE_TARGET_COMPANY"'

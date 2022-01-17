@@ -41,7 +41,8 @@ namespace IO
 	inline void moveToDateFolder(const path_string & filePath, const path_string & target_folder)
 	{
 		path_string dateName = getOnlyNameFromPath(filePath);
-		wchar_t * delimiter = L"-";
+		constexpr auto tmp = L"-";
+		const wchar_t * delimiter = L"-";
 		auto dateTokents = split(dateName , *delimiter);
 		DateStruct dateStruct;
 		if (dateTokents.size() >=  nCOUNT)

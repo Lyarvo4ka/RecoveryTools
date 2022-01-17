@@ -113,7 +113,7 @@ namespace IO
 		{
 			return findInRegion(range_.begin, curr_offset);
 		}
-		bool search—ircle(uint64_t curr_offset)
+		bool searchCircle(uint64_t curr_offset)
 		{
 			bool bFound = findFromCurrentToEnd(curr_offset);
 			if (!bFound)
