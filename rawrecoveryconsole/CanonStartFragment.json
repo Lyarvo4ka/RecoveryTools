@@ -1,0 +1,19 @@
+{
+  "canonstartfragment":
+  {  
+    "description": "Find header. Read full size. Find mdat with calc size",
+    "algorithmName": "canonstartfragment",
+    "category": "video",
+
+		"header":
+          [
+            {
+                "textdata":"ftyp",
+                "offset": 4
+            }            
+            
+          ],
+    "extension": ".mov",
+    "block_size": 131072
+	}
+}

@@ -33,6 +33,7 @@ namespace fs = std::filesystem;
 #include "raw/zoomh6raw.h"
 #include "raw/gopro.h"
 #include "raw/canonfragment.h"
+#include "raw/quicktime.h"
 #include "raw/webmraw.h"
 #include "raw/prproj.h"
 
@@ -44,7 +45,7 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 	//factory_manager.Register("Canon4FileFragmentRaw", std::make_unique<Canon4FileFragmentRawFactory>());
 	//Canon4FileFragmentRaw
 	//factory_manager.Register("7z", std::make_unique<IO::Raw7zFactory>());
-	factory_manager.Register("prproj" , std::make_unique<RAW::RawAdobePremireFactory>());
+	//factory_manager.Register("prproj" , std::make_unique<RAW::RawAdobePremireFactory>());
 	//initVideoFactoryManager(factory_manager);
 
 	//factory_manager.Register("flp", std::make_unique<IO::RawFLPFactory>());
@@ -54,8 +55,7 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 	//initKeysFactoryManager(factory_manager);
 	//factory_manager.Register("canonfragment", std::make_unique<RAW::QTFragmentRawFactory>());
 	//initAudioFactoryManager(factory_manager);
-	factory_manager.Register("webm", std::make_unique<RAW::RawWebmFactory>());
-	//factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
+	//factory_manager.Register("webm", std::make_unique<RAW::RawWebmFactory>());
 
 	//factory_manager.Register("pln", std::make_unique<RAW::PLNRawFactory>());
 	//factory_manager.Register("pln_bl", std::make_unique<RAW::PLN_BLRawFactory>());
@@ -78,6 +78,9 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 	//factory_manager.Register("cdw", std::make_unique<IO::RawCWDFactory>());
 
 	//factory_manager.Register("Canon80D", std::make_unique<IO::Canon80D_FragmentRawFactory>());
+	
+	//factory_manager.Register("canonstartfragment", std::make_unique<RAW::CanonStartFragmentFactory>());
+	factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
 
 
 }

@@ -89,7 +89,11 @@ target_link_libraries(${APP_NAME} libraw)
 target_link_libraries(${APP_NAME} libjsonreader)
 
 
-set_target_properties(${APP_NAME} PROPERTIES
-    WIN32_EXECUTABLE ON
-    MACOSX_BUNDLE ON
-)
+# set_target_properties(${APP_NAME} PROPERTIES
+#     WIN32_EXECUTABLE ON
+#     MACOSX_BUNDLE ON
+# )
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set_property(TARGET ${PROJECT_NAME} PROPERTY WIN32_EXECUTABLE true)
+endif() 

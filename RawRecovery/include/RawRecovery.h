@@ -12,8 +12,10 @@ public:
 
 protected slots:
 	void OnDeviceContextMenu(const QPoint& point_pos);
+	void getSelectedDeviceIndex(const QModelIndex&);
 
 private:
 	Ui::RawRecoveryClass ui;
 	QAction* contectMenu_;
+	QTreeWidgetItem* informationItem_tmp;
 };

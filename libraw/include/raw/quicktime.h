@@ -435,12 +435,6 @@ namespace RAW
 
 
 
-	/*
-	1. goto offset 2235 (full file size)
-	2. read ftyp and moov (calculate size 1 part)
-	3. full file size - size 1 part
-	4. Find mdat with expexted size
-	*/
 
 	class QuickTimeRawFactory
 		: public RawFactory
@@ -452,8 +446,18 @@ namespace RAW
 		}
 	};
 
+
+	/*
+	1. goto offset 2235 (full file size)
+	2. read ftyp and moov (calculate size 1 part)
+	3. full file size - size 1 part
+	4. Find mdat with expexted size
+	*/
+
 	const uint32_t OffsetToFileSize = 2234;
 	const uint32_t Offset_29CA = 0x29CA;
+	const uint32_t offset_4764 = 4764;
+	const uint32_t offset_1398 = 1398;
 
 	class CanonStartFragment
 		: public StandartRaw
@@ -495,10 +499,24 @@ namespace RAW
 			toBE32(expected_block.block_size);
 			memcpy(expected_block.block_type, s_mdat, qt_keyword_size);
 
-			//offset = start_offset + firstPartSize;
-			offset = 0;
+			auto mdatHandle = findSecondPart(expected_block, sectondPartSize);
+			if (mdatHandle.isValid())
+			{
+				auto written_size = appendToFile(target_file, start_offset, firstPartSize);
+				written_size += appendToFile(target_file, mdatHandle.offset(), mdatHandle.size());
+				return written_size;
+			}
+
+			return 0;
+		}
+
+		QtHandle findSecondPart(const qt_block_t &expected_block , const uint64_t sectondPartSize)
+		{
+			uint64_t offset = 0;
 			DataArray buffer(default_block_size);
-			
+
+			QuickTimeRaw qt_raw(this->getDevice());
+
 			while (offset < this->getSize())
 			{
 				setPosition(offset);
@@ -509,15 +527,11 @@ namespace RAW
 					qt_block_t* pQtBlock = (qt_block_t*)(buffer.data() + iSector);
 					if (memcmp(&expected_block, pQtBlock, qt_block_struct_size) == 0)
 					{
-
 						auto mdat_offset = offset + iSector;
 						auto mdat_handle = qt_raw.readQtAtom(mdat_offset);
 						if (mdat_handle.size() == sectondPartSize)
 						{
-
-							auto written_size = appendToFile(target_file, start_offset, firstPartSize);
-							written_size += appendToFile(target_file, mdat_offset, mdat_handle.size());
-							return written_size;
+							return mdat_handle;
 						}
 					}
 				}
@@ -527,7 +541,8 @@ namespace RAW
 
 
 
-			return 0;
+			return QtHandle();
+
 		}
 		bool Specify(const uint64_t start_offset) override
 		{

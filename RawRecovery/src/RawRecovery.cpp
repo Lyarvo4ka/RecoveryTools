@@ -8,7 +8,9 @@
 #include "signatureitem.h"
 
 #include <QMessageBox>
+#include <QTreeWidget>
 
+#include "propertiesWidget.h"
 
 RawRecovery::RawRecovery(QWidget *parent)
 	: QMainWindow(parent)
@@ -36,6 +38,8 @@ RawRecovery::RawRecovery(QWidget *parent)
 //	ui.treeView->addAction(contectMenu_);
 
 	connect(ui.treeView, &QWidget::customContextMenuRequested, this, &RawRecovery::OnDeviceContextMenu);
+	connect(ui.treeView, &QTreeView::clicked, this, &RawRecovery::getSelectedDeviceIndex);
+//	QObject::connect(treeView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(getSelectedDeviceIndex(const QModelIndex&)));
 
 	auto folder_path = LR"(c:\soft\!MyPrograms\SignatureTestConsole\signatures\)";
 	SignatureReader singReader;
@@ -64,6 +68,27 @@ RawRecovery::RawRecovery(QWidget *parent)
 
 	auto pSignatureTreeModel = new SignatureTreeModel(sign_root, this);
 	ui.signatureTree->setModel(pSignatureTreeModel);
+
+	QTreeWidget * propertyWidget = ui.propertyWidget;
+	propertyWidget->setColumnCount(2);
+	informationItem_tmp = new QTreeWidgetItem(propertyWidget);
+	informationItem_tmp->setText(0, "Information");
+
+
+	QTreeWidgetItem* treeItemName = new QTreeWidgetItem();
+	treeItemName->setText(0, "Name");
+	treeItemName->setText(1, "No device selected");
+
+	QTreeWidgetItem* treeItemSize = new QTreeWidgetItem();
+	treeItemSize->setText(0, "Size");
+	treeItemSize->setText(1, "No device selected");
+
+	informationItem_tmp->addChild(treeItemName);
+	informationItem_tmp->addChild(treeItemSize);
+
+	informationItem_tmp->setExpanded(true);
+
+
 }
 
 void RawRecovery::OnDeviceContextMenu(const QPoint& point_pos)
@@ -85,7 +110,27 @@ void RawRecovery::OnDeviceContextMenu(const QPoint& point_pos)
 					QString msg_string = "Selected " + QString::fromWCharArray(devInfo.name.c_str()) + "ID = " + QString::number(devInfo.deviceID);
 					msgBox.setText(msg_string);
 					msgBox.exec();
+
+					//auto deviceNameItem = informationItem_tmp->child(0);
+					//deviceNameItem->setText(1, QString::fromWCharArray(devInfo.name.c_str()));
 				}
+			}
+		}
+	}
+}
+
+void RawRecovery::getSelectedDeviceIndex(const QModelIndex& device_cell)
+{
+	if (device_cell.isValid())
+	{
+		auto seclected_index = static_cast<DeviceItem*>(device_cell.internalPointer());
+		if (seclected_index)
+		{
+			auto selected_device = seclected_index->getAdapter()->createDevice();
+			if (selected_device)
+			{
+				PropertiesWidget widget;
+				widget.changeDevice(selected_device, ui.propertyWidget);
 			}
 		}
 	}
