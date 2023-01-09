@@ -54,15 +54,6 @@ include_directories(${SOURCE_DIR})
 file(GLOB_RECURSE HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
 )
-
-#  file(GLOB_RECURSE SOURCES
-#     "${FORMS_DIR}/*.ui"
-#     "${FORMS_DIR}/*.qrc"
-#     "${INCLUDE_DIR}/*.h"
-#     "${SOURCE_DIR}/*.cpp"
-# )
-
-
 #=================== SETUP EXECTUABLE ====================#
 # Enable debug logging on RELWITHDEBINFO configuration
 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
@@ -97,7 +88,6 @@ target_include_directories(${APP_NAME}
 )
 
 
-message("Qt version major = " ${QT_VERSION_MAJOR})
 #===================== LINKING LIBRARIES =======================#
 target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core)
 

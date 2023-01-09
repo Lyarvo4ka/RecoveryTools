@@ -36,6 +36,7 @@ namespace fs = std::filesystem;
 #include "raw/quicktime.h"
 #include "raw/webmraw.h"
 #include "raw/prproj.h"
+#include "raw/rawmxf.h"
 
 void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 {
@@ -62,11 +63,11 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 
 	//factory_manager.Register("keychain-db", std::make_unique<IO::KeychainRawFactory>());
 
-	//factory_manager.Register("mxf", std::make_unique<IO::RawMXFFactory>());
+	//factory_manager.Register("mxf", std::make_unique<RAW::RawMXFFactory>());
 
 	//factory_manager.Register("go_pro", std::make_unique<IO::GoProRawFactory>());
-
-
+	factory_manager.Register("quicktime", std::make_unique<RAW::QuickTimeRawFactory>());
+	
 
 	//factory_manager.Register("BlackVue", std::make_unique<IO::BlackVue_QtRawFactory>());
 	//factory_manager.Register("mx7", std::make_unique<IO::RawFIFFFactory>());
@@ -80,7 +81,7 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 	//factory_manager.Register("Canon80D", std::make_unique<IO::Canon80D_FragmentRawFactory>());
 	
 	//factory_manager.Register("canonstartfragment", std::make_unique<RAW::CanonStartFragmentFactory>());
-	factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
+	//factory_manager.Register("CanonEOSR6", std::make_unique<RAW::CanonStartFragmentFactory>());
 
 
 }

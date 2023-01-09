@@ -3,6 +3,7 @@
 #include "io/finder.h"
 
 
+
 void fixAllDbfFiles(const IO::path_string & folder)
 {
 	IO::Finder finder;
@@ -75,19 +76,260 @@ void createManyExcelFiles()
 
 #include "io/fs.h"
 
-int wmain(int argc, wchar_t* argv[])
+void splitToFiles(const IO::path_string & sourcePath , const IO::path_string& folder  )
 {
-	IO::path_string foldername = LR"(f:\video\)";
-	//createManyExcelFiles();
+	IO::File sourceFile(sourcePath);
+	sourceFile.OpenRead();
 
-	IO::Finder finder;
-	finder.FindFiles(foldername);
-	for (const auto& fileName : finder.getFiles())
+	const uint32_t MaxFiles = 4;
+	const uint32_t PageSize = 528;
+
+	std::vector<IO::File > targetFiles;
+	for (uint32_t i = 0; i < MaxFiles; ++i)
 	{
-		IO::moveToDateFolder(fileName, foldername);
+		IO::File targetFile(folder + std::to_wstring(i));
+		targetFiles.emplace_back(targetFile);
+	}
+	for (auto& targetFile : targetFiles)
+	{
+		targetFile.OpenCreate();
 	}
 
-	//fixAllDbfFiles(foldername);
+
+
+	IO::DataArray buffer(PageSize);
+
+	uint64_t offset = 0;
+	while (offset < sourceFile.Size())
+	{
+		sourceFile.setPosition(offset);
+		sourceFile.ReadData(buffer);
+		
+		uint8_t val0 = buffer[0];
+
+		if (val0 < MaxFiles)
+		{
+			targetFiles[val0].WriteData(buffer.data() + 4, 512);
+		}
+
+		offset += PageSize;
+	}
+
+}
+
+void splitByPage()
+{
+	const uint32_t fullSize = 4096;
+	IO::DataArray fullPage(fullSize);
+
+	const IO::path_string sourcePath = LR"(y:\51236\full\full_image.bin)";
+	IO::File sourceFile(sourcePath);
+	sourceFile.OpenRead();
+
+	const IO::path_string smallPath = LR"(y:\51236\full\small.dump)";
+	IO::File smallFile(smallPath);
+	smallFile.OpenCreate();
+
+	const IO::path_string bigPath = LR"(y:\51236\full\big.dump)";
+	IO::File bigFile(bigPath);
+	bigFile.OpenCreate();
+
+	uint64_t offset = 0;
+	while (offset < sourceFile.Size())
+	{
+		sourceFile.setPosition(offset);
+		sourceFile.ReadData(fullPage);
+
+		smallFile.WriteData(fullPage.data(), 96);
+		bigFile.WriteData(fullPage.data() + 96, 4000);
+		offset += fullSize;
+	}
+	
+}
+
+#include "io/onec.h"
+
+#include <fstream>
+
+void readAddressSaveToFile(std::string & addressFilename, const IO::path_string & sourceFilename, const IO::path_string & targetFilename)
+{
+	std::ifstream addrFile(addressFilename.c_str());
+
+	std::string str;
+	std::list<std::string> listAddr;
+	while (std::getline(addrFile, str))
+		listAddr.emplace_back(str);
+
+	IO::File source(sourceFilename);
+	source.OpenRead();
+
+	IO::File target(targetFilename);
+	target.OpenCreate();
+
+	const uint32_t buff_size = 9437184*2;
+
+	IO::DataArray buff(buff_size);
+
+	for (const auto& offset_txt : listAddr)
+	{
+		auto offset = stoll(offset_txt, nullptr, 16);
+		source.setPosition(offset);
+		source.ReadData(buff);
+
+		target.WriteData(buff.data(), buff.size());
+
+
+	}
+
+}
+
+#include <map>
+
+template<typename T>
+typename T::value_type most_frequent_element(T const& v)
+{    // Precondition: v is not empty
+	std::map<typename T::value_type, int> frequencyMap;
+	int maxFrequency = 0;
+	typename T::value_type mostFrequentElement{};
+	for (auto&& x : v)
+	{
+		int f = ++frequencyMap[x];
+		if (f > maxFrequency)
+		{
+			maxFrequency = f;
+			mostFrequentElement = x;
+		}
+	}
+
+	return mostFrequentElement;
+}
+
+void savePopularBlock(const IO::path_string& source_filename, uint32_t block_size)
+{
+	const uint32_t kb = 1024;
+	const uint32_t nCount = 16;
+
+	IO::File source(source_filename);
+	source.OpenRead();
+
+	IO::File target(source_filename + L".target");
+	target.OpenCreate();
+
+	IO::DataArray src_buff(block_size);
+	IO::DataArray target_buff(block_size);
+	uint64_t offset = 0;
+
+
+
+	while (offset < source.Size())
+	{
+		source.setPosition(offset);
+		source.ReadData(src_buff);
+
+		std::vector< uint8_t > arrVall(nCount , 0x00);
+
+
+		for (uint32_t i = 0; i < nCount; i+= kb)
+		{
+			uint8_t val = 0;
+			for (auto iByte = 0; iByte < kb; ++iByte)
+				val ^= src_buff[i + iByte];
+
+			arrVall.at(i) = val;
+		}
+		auto max_popular = most_frequent_element(arrVall);
+		for ( auto i = 0 ; i < arrVall.size(); ++i)
+			if (max_popular == arrVall.at(i))
+			{
+				for (auto j = 0; j < target_buff.size(); j += kb)
+				{
+					memcpy(target_buff.data() + j, src_buff.data() + i * kb, kb);
+				}
+			}
+
+		target.WriteData(target_buff.data(), target_buff.size());
+		offset += src_buff.size();
+	}
+
+}
+
+
+void modify_mft(const IO::path_string& src_filename)
+{
+	IO::File source(src_filename);
+	source.OpenRead();
+
+	IO::File target(src_filename + L".result");
+	target.OpenCreate();
+
+	const uint32_t EntrySize = 1024;
+
+	IO::DataArray buff(EntrySize);
+	uint64_t offset = 0;
+	IO::DataArray target_buff(EntrySize);
+
+
+	const char FILE0[] = { 0x46 , 0x49 , 0x4C , 0x45 };
+	constexpr uint32_t sizeFILE0 = SIZEOF_ARRAY(FILE0);
+
+
+	while (offset < source.Size())
+	{
+		source.setPosition(offset);
+		source.ReadData(buff);
+
+		if (memcmp(FILE0, buff.data(), sizeFILE0) == 0)
+			memcpy(target_buff.data(), buff.data(), EntrySize);
+		else
+			memcpy(target_buff.data(), buff.data()+ sizeFILE0, EntrySize- sizeFILE0);
+
+		target.WriteData(target_buff.data(), target_buff.size());
+		offset += EntrySize;
+	}
+	
+
+}
+
+
+int wmain(int argc, wchar_t* argv[])
+{
+	//IO::path_string file1 = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH.mdf)";
+	//IO::path_string file2 = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH.mdf_old)";
+	//IO::path_string result = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH_result)";
+
+	//modify_mft(file1);
+	//IO::DataArray bad_sector_marker(Signatures::bad_sector_header_size);
+	//memcpy(bad_sector_marker.data(), Signatures::bad_sector_header, Signatures::bad_sector_header_size);
+	//IO::replaceBadsFromOtherFile(file1, file2, result , bad_sector_marker , 512);
+
+	//readAddressSaveToFile(addrFile, src, dst);
+	//savePopularBlock(src, 16 * 1024);
+
+	//IO::RestoreRootObject();
+
+	IO::path_string foldername = LR"(z:\52036\Task\bad_sector\BASES\to_fix\)";
+	//IO::Finder finder;
+	//finder.FindFiles(foldername);
+	//for (const auto& fileName : finder.getFiles())
+	//{
+	//	IO::RenamePSD_date(fileName);
+	//}
+
+	//IO::path_string filename = LR"(c:\tmp\audio.bin)";
+	//IO::path_string foldername = LR"(c:\tmp\)";
+	//splitToFiles(filename, foldername);
+
+	
+	//createManyExcelFiles();
+	//splitByPage();
+	//IO::Finder finder;
+	//finder.FindFiles(foldername);
+	//for (const auto& fileName : finder.getFiles())
+	//{
+	//	IO::moveToDateFolder(fileName, foldername);
+	//}
+
+	fixAllDbfFiles(foldername);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";

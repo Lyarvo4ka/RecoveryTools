@@ -3,8 +3,12 @@
 #include "io/physicaldrive.h"
 #include "io/iodevice.h"
 #include "io/diskdevice.h"
+#include "io/file.h"
 
 #include "treeitem.h"
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 enum DeviceItemNames : int
 {
@@ -73,6 +77,61 @@ public:
 	}
 };
 
+class PartitionAdapter
+	: public DeviceAdapter
+{
+	IO::PhysicalDrivePtr physical_drive_;
+public:
+	PartitionAdapter(IO::PhysicalDrivePtr physical_drive_ptr)
+		: physical_drive_(physical_drive_ptr)
+	{
+		
+		itemData_.name = "Partition name";
+		itemData_.label = "Partition label";
+		itemData_.fs = "Filesystem";
+		itemData_.start = 0;
+		itemData_.size = physical_drive_->getSize();
+	}
+	IO::IODevicePtr createDevice() override
+	{
+		return std::make_shared<IO::DiskDevice>(physical_drive_);
+	}
+};
+
+class FileAdapter :
+	public DeviceAdapter
+{
+	IO::path_string filename_;
+public:
+	FileAdapter(const IO::path_string& fileName)
+		: filename_(fileName)
+	{
+		try {
+			fs::path filePath(fileName);
+			auto onlyFileName = filePath.filename().generic_string();
+			itemData_.name = QString::fromStdString(onlyFileName);
+
+			IO::File tmpFile(fileName);
+			tmpFile.OpenRead();
+			itemData_.size = tmpFile.Size();
+			itemData_.start = 0;
+
+
+		}
+		catch (IO::IOErrorException ex)
+		{
+			qDebug() << "cougth exception";
+		}
+
+
+
+		//itemData_.name = 
+	}
+	IO::IODevicePtr createDevice() override
+	{
+		return std::make_shared<IO::File>(filename_);
+	}
+};
 
 using DeviceItem = TreeItem<DeviceAdapter>;
 

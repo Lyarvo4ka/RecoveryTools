@@ -92,11 +92,11 @@ int saveFilesWithExt4Extent(int argc, char* argv[])
 	}
 	ConsoleRawParser ext4ConsoleParser;
 
-	IO::path_string targetfilename = LR"(g:\result\file.raw)";
-	IO::File target_file(targetfilename);
-	target_file.OpenCreate();
+	//IO::path_string targetfilename = LR"(d:\51098\file.raw)";
+	//IO::File target_file(targetfilename);
+	//target_file.OpenCreate();
 
-	IO::path_string offsetExtents_txt = LR"(g:\result\file80Gb.txt)";
+	IO::path_string offsetExtents_txt = LR"(o:\51214\depth\1.depth)";
 
 	ext4ConsoleParser.parse(argc_new, argv);
 	if (ext4ConsoleParser.isValid())
@@ -108,7 +108,7 @@ int saveFilesWithExt4Extent(int argc, char* argv[])
 		
 		//ext4_recovery.setOffsetsFileName(offsetExtents_txt);
 
-		//IO::path_string target_folder = LR"(g:\result\)";
+		IO::path_string target_folder = LR"(d:\51210\)";
 		//uint64_t offset = 0x2a02020000; 
 	//0x19090F8000; - file 80 Gb
 		 
@@ -116,9 +116,9 @@ int saveFilesWithExt4Extent(int argc, char* argv[])
 		for (const auto& offset : listOffsets)
 		{
 			auto block_number = offset / 4096;
-			//auto targetfilename = IO::offsetToPath(target_folder, offset, L".bak");
-			//IO::File target_file(targetfilename);
-			//target_file.OpenCreate();
+			auto targetfilename = IO::offsetToPath(target_folder, offset, L".ext");
+			IO::File target_file(targetfilename);
+			target_file.OpenCreate();
 			ext4_recovery.saveToFile(block_number, target_file); 
 		}
 	}
@@ -244,18 +244,18 @@ int saveZipFilesWithExt4Extent(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	ConsoleRawParser ext4ConsoleParser;
-	ext4ConsoleParser.parse(argc, argv);
-	if (ext4ConsoleParser.isValid())
-	{
-		const uint16_t maxDepth = 3;
-		auto device = ext4ConsoleParser.getDevice();
-		device->Open(IO::OpenMode::OpenRead);
-		RAW::ext4_raw ext4Recovery(device);
-		ext4Recovery.searchExtents(ext4ConsoleParser.getOffset(), ext4ConsoleParser.getTargetValue(), maxDepth);  
-	}
+	//ConsoleRawParser ext4ConsoleParser;
+	//ext4ConsoleParser.parse(argc, argv);
+	//if (ext4ConsoleParser.isValid())
+	//{
+	//	const uint16_t maxDepth = 65535;
+	//	auto device = ext4ConsoleParser.getDevice();
+	//	device->Open(IO::OpenMode::OpenRead);
+	//	RAW::ext4_raw ext4Recovery(device);
+	//	ext4Recovery.searchExtents(ext4ConsoleParser.getOffset(), ext4ConsoleParser.getTargetValue(), maxDepth);  
+	//}
 
-	//saveFilesWithExt4Extent(argc, argv);
+	saveFilesWithExt4Extent(argc, argv);
 	//saveZipFilesWithExt4Extent(argc, argv);
 
 	_CrtDumpMemoryLeaks();

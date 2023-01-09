@@ -136,13 +136,15 @@ inline void ReadSignatures(SignatureReader & signatureReader, RAW::HeaderBase::P
 
 int test_signatures(const IO::path_string & folderToTest)
 {
-	auto singature_path = fs::current_path() / "signatures";
+	std::filesystem::path current_folder = R"(c:\soft\!MyPrograms\SignatureTestConsole\)"; // fs::current_path() ;
+
+	auto singature_path = current_folder / "signatures";
 	std::cout << singature_path.string() << std::endl;
 	//singature_path += "signatures";
 	SignatureReader signReader;
 	signReader.loadAllSignatures(singature_path.wstring(), L".json");
 
-	auto extension_path = fs::current_path() / "extensions";
+	auto extension_path = current_folder / "extensions";
 	std::cout << extension_path.string() << std::endl;
 	//extension_path += "extensions";
 	ExtensionReader extReader;
@@ -182,9 +184,21 @@ int test_signatures(const IO::path_string & folderToTest)
 
 	for (auto fileToTest : finder.getFiles())
 	{
-		//std::wcout << fileToTest << " ";
-		signTester.testSigantures(fileToTest);
-		//std::wcout<< std::endl;
+		try
+		{
+			//std::wcout << fileToTest << " ";
+			signTester.testSigantures(fileToTest);
+			//std::wcout << std::endl;
+		}
+		catch (IO::IOErrorException ex)
+		{
+			std::cout << ex.what();
+		}
+		catch (...)
+		{
+			std::wcout << fileToTest << std::endl;
+			std::cout << "Caught unknown exception" << std::endl;
+		}
 	}
 
 	auto unkownListExt = signTester.getUnknownExtensions();
@@ -214,6 +228,7 @@ int test_signatures(const IO::path_string & folderToTest)
 
 int main(int argc, char* argv[])
 {
+	
 	QCoreApplication a(argc, argv);
 	if (argc == 2)
 	{
@@ -239,6 +254,8 @@ int main(int argc, char* argv[])
 	}
 	else
 		std::cout << "Wrong params" << std::endl;
+
+
 	//	IO::Finder finder;
 	////finder.add_extension(L".mp3");
 	//finder.FindFiles(folderToTest);

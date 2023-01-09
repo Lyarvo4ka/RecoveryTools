@@ -152,9 +152,9 @@ namespace RAW
 		data_finder.setSearchSize(block_size_);
 
 		ExtentSearchValues extSearchValues(block_size_);
-		extSearchValues.setMaxDepth(2);
+		extSearchValues.setMaxDepth(max_depth);
 
-		data_finder.compareFunctionPtr_ = std::bind(&ExtentSearchValues::cmpExtentIfLessMaxDepth, extSearchValues, std::placeholders::_1, std::placeholders::_2);
+		data_finder.compareFunctionPtr_ = std::bind(&ExtentSearchValues::cmpExtentIfLessMaxDepth, &extSearchValues, std::placeholders::_1, std::placeholders::_2);
 
 		ExtentsDepthByLevel extDepth(target_folder);
 
@@ -403,7 +403,7 @@ namespace RAW
 		uint32_t size = 0;
 		if (extent_block->header.depth == 0) {
 			for (int i = 0; i < extent_block->header.entries; i++) {
-				offset = volume_offset_ + extent_block->extent[i].PysicalBlock() * block_size_;
+				offset = 0 + extent_block->extent[i].PysicalBlock() * block_size_;
 
 
 
@@ -421,11 +421,19 @@ namespace RAW
 				}
 
 
-				if (memcmp (data_array.data() , Signatures::bad_sector_marker , Signatures::bad_sector_marker_size) == 0)
+				if (memcmp(data_array.data(), Signatures::bad_sector_marker, Signatures::bad_sector_marker_size) == 0)
 					return 0;
 
 				//extent_block->extent[i].block += 0x10000000;
+
 				uint64_t target_offset = (uint64_t)extent_block->extent[i].block * block_size_;
+				if (i == 0)
+					if (target_offset > 0)
+					{
+						int k = 1;
+						k = 1;
+						return 0;
+					}
 				target_file.setPosition(target_offset);
 				target_file.WriteData(data_array.data(), size);
 			}
@@ -473,6 +481,11 @@ namespace RAW
 		if (extent_block->header.depth <= maxDepth_)
 			if (isValidExtent(*extent_block, max_extents_in_block_))
 			{
+				if (depth_ > 0)
+				{
+					int k = 1;
+					k = 2;
+				}
 				depth_ = extent_block->header.depth;
 				return true;
 			}

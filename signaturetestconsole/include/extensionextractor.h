@@ -22,6 +22,8 @@ public:
 			file.OpenRead();
 			if (file.Size() < buffer.size())
 				read_size = file.Size();
+			if (read_size == 0)
+				continue;
 
 			file.ReadData(buffer.data(), read_size);
 			file.Close();

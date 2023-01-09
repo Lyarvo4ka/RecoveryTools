@@ -16,8 +16,13 @@ public:
     {
         auto informationItem = treeWidget->topLevelItem(0);
 		auto deviceNameItem = informationItem->child(0);
+        auto deviceSizeItem = informationItem->child(1);
+
         auto devInfo = device->getDeviceInfo();
 		deviceNameItem->setText(1, QString::fromWCharArray(devInfo.name.c_str()));
+        deviceSizeItem->setText(1, QString::number(device->Size())  + " (bytes)");
+
+
     }
 
 };

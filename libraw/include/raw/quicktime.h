@@ -33,6 +33,7 @@ namespace RAW
 	const char s_rmra[] = "rmra";
 	const char s_uuid[] = "uuid";
 	const char s_meta[] = "meta";
+	const char s_PICT[] = "PICT";
 
 	const std::string_view stco_table_name = "stco";
 
@@ -43,7 +44,7 @@ namespace RAW
 
 
 	const array_keywords qt_array = { s_ftyp, s_moov, s_mdat, s_wide , s_free, s_skip, s_pnot, s_prfl,
-									  s_mvhd, s_clip, s_trak, s_udta, s_ctab, s_cmov, s_rmra , s_uuid, s_meta };
+									  s_mvhd, s_clip, s_trak, s_udta, s_ctab, s_cmov, s_rmra , s_uuid, s_meta , s_PICT };
 
 
 
@@ -98,31 +99,7 @@ namespace RAW
 		return (memcmp(qt_block.block_type, keyword_name, qt_keyword_size) == 0);
 	}
 
-	enum class SearchDirection { kForward, kBackward };
 
-	inline bool findTextTnBlock(const DataArray& data_array, std::string_view textToFind, uint32_t& position, SearchDirection searchDirection = SearchDirection::kForward)
-	{
-		uint32_t temp_pos = 0;
-		for (uint32_t pos = 0; pos < data_array.size() - textToFind.length(); ++pos)
-		{
-			if (searchDirection == SearchDirection::kForward)
-				temp_pos = pos;
-			else
-				temp_pos = data_array.size() - static_cast<uint32_t>(textToFind.length()) - pos;
-
-			if (memcmp(data_array.data() + temp_pos, textToFind.data(), textToFind.length()) == 0)
-			{
-				position = temp_pos;
-				return true;
-			}
-		}
-		return false;
-	}
-
-	inline bool findTextTnBlockFromEnd(const DataArray& data_array, std::string_view textToFind, uint32_t& position)
-	{
-		return findTextTnBlock(data_array, textToFind, position, SearchDirection::kBackward);
-	}
 
 	const uint8_t moov_signToFind[] = { 0x6D, 0x6F, 0x6F, 0x76, 0x00, 0x00, 0x00 };
 	const int moov_signToFind_size = SIZEOF_ARRAY(moov_signToFind);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "AbstractRaw.h"
-#include "Factories.h"
+#include "abstractraw.h"
+#include "factories.h"
 
 namespace RAW
 {

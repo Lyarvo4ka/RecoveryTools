@@ -236,6 +236,95 @@ namespace IO
 		return calc_nulls(data_array.data(), data_array.size());
 	}
 
+	enum class SearchDirection { kForward, kBackward };
+
+	inline bool findTextTnBlock(const DataArray& data_array, std::string_view textToFind, uint32_t& position, SearchDirection searchDirection = SearchDirection::kForward)
+	{
+		uint32_t temp_pos = 0;
+		for (uint32_t pos = 0; pos < data_array.size() - textToFind.length(); ++pos)
+		{
+			if (searchDirection == SearchDirection::kForward)
+				temp_pos = pos;
+			else
+				temp_pos = data_array.size() - static_cast<uint32_t>(textToFind.length()) - pos;
+
+			if (memcmp(data_array.data() + temp_pos, textToFind.data(), textToFind.length()) == 0)
+			{
+				position = temp_pos;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	inline bool findTextTnBlockFromEnd(const DataArray& data_array, std::string_view textToFind, uint32_t& position)
+	{
+		return findTextTnBlock(data_array, textToFind, position, SearchDirection::kBackward);
+	}
+
+	inline void RenamePSD_date(const IO::path_string& filePath)
+	{
+		//const BYTE PSD_modifyDate[] = {0x3C , 0x78 , 0x6D , 0x70 , 0x3A , 0x4D , 0x6F , 0x64 , 0x69 , 0x66 , 0x79 , 0x44 , 0x61 , 0x74 , 0x65 , 0x3E};
+		//const uint32_t PSD_modifyDate_size = SIZEOF_ARRAY(PSD_modifyDate);
+		std::string modifyDate_txt = "<xmp:ModifyDate>";
+
+		IO::File psdFile(filePath);
+		psdFile.OpenRead();
+
+		IO::DataArray buff(default_block_size);
+		uint64_t offset = 0;
+		uint32_t pos = 0;
+		const uint32_t dateBuffSize = 19;
+		char dateBuff[dateBuffSize + 1];
+		ZeroMemory(dateBuff, dateBuffSize + 1);
+
+		std::string date_string;
+		uint32_t block_size = 0;
+
+		while (offset < psdFile.Size())
+		{
+			block_size = calcBlockSize(offset, psdFile.Size(), buff.size());
+			ZeroMemory(buff.data(), buff.size());
+			psdFile.setPosition(offset);
+			psdFile.ReadData(buff.data(), block_size);
+			if (findTextTnBlock(buff, modifyDate_txt, pos))
+			{
+				auto new_offset = offset + pos + modifyDate_txt.length();
+				psdFile.setPosition(new_offset);
+				psdFile.ReadData((ByteArray)dateBuff, dateBuffSize);
+				date_string = dateBuff;
+
+				break;
+			}
+			offset += buff.size();
+		}
+		if (date_string.empty())
+			return;
+
+		psdFile.Close();
+
+		std::replace(date_string.begin(), date_string.end(), 'T', '-');
+		std::replace(date_string.begin(), date_string.end(), ':', '-');
+
+		fs::path src_path(filePath);
+		auto folder_path = src_path.parent_path().generic_wstring();
+		auto only_name_path = src_path.stem().generic_wstring();
+		auto ext = src_path.extension().generic_wstring();
+		IO::path_string new_date_str(date_string.begin(), date_string.end());
+		auto new_name = folder_path + L"/" + new_date_str + L"-" + only_name_path + ext;
+
+		try
+		{
+			fs::rename(filePath, new_name);
+		}
+		catch (const fs::filesystem_error& e)
+		{
+			std::cout << "Error: " << e.what() << std::endl;
+		}
+
+
+
+	}
 
 	inline void RenameMP4_date(const IO::path_string& filePath)
 	{
@@ -502,7 +591,11 @@ namespace IO
 		return alingToValue(offset, sector_size);
 	}
 
-	inline void replaceBadsFromOtherFile(const path_string& withBads_name, const path_string& withoutBads_name, const path_string& target_name)
+	inline void replaceBadsFromOtherFile(const path_string& withBads_name, 
+										 const path_string& withoutBads_name, 
+		                                 const path_string& target_name , 
+										 const DataArray & marker, 
+										 const uint32_t sector_size)
 	{
 		File withBads_file(withBads_name);
 		withBads_file.Open(OpenMode::OpenRead);
@@ -528,6 +621,9 @@ namespace IO
 		uint32_t read_size1 = 0;		
 		uint32_t read_size2 = 0;
 
+		//const uint8_t UNREADABLESECTOR[] = { 0x55, 0x4E, 0x52, 0x45, 0x41, 0x44, 0x41, 0x42, 0x4C, 0x45, 0x53, 0x45, 0x43, 0x54, 0x4F, 0x52 };
+		//const uint32_t UNREADABLESECTOR_SIZE = SIZEOF_ARRAY(UNREADABLESECTOR);
+		//const uint32_t SECTOR_SIZE = 2048;
 
 		while (offset < withBads_file.Size())
 		{
@@ -546,10 +642,10 @@ namespace IO
 				if (bytesReadwithoutBads < cmp_bytes)
 					cmp_bytes = bytesReadwithoutBads;
 
-				for (uint32_t iSector = 0; iSector < cmp_bytes; iSector += default_sector_size)
+				for (uint32_t iSector = 0; iSector < cmp_bytes; iSector += sector_size)
 				{
-					if (memcmp(data1.data() + iSector, Signatures::bad_sector_marker, Signatures::bad_sector_marker_size) == 0)
-						memcpy(data1.data() + iSector, data2.data() + iSector, default_sector_size);
+					if (memcmp(data1.data() + iSector, marker.data(), marker.size()) == 0)
+						memcpy(data1.data() + iSector, data2.data() + iSector, sector_size);
 				}
 			}
 

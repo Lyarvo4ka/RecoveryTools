@@ -85,6 +85,9 @@ namespace IO
 		const uint32_t data_start = pos % sector_size;
 		const int sector_to_read = (data_start + read_size) / sector_size + 1;
 		const int bytes_to_read = sector_to_read * sector_size;
+		auto align_sector = pos / sector_size;
+		auto align_offset = align_sector * sector_size;
+		io_engine_->setPosition(align_offset);
 
 		DataArray temp_data(bytes_to_read);
 		auto bytes_read = ReadBlock(temp_data.data(), temp_data.size());

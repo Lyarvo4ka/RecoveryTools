@@ -13,6 +13,7 @@ public:
 protected slots:
 	void OnDeviceContextMenu(const QPoint& point_pos);
 	void getSelectedDeviceIndex(const QModelIndex&);
+	void CreateRawWindet(const QModelIndex&);
 
 private:
 	Ui::RawRecoveryClass ui;

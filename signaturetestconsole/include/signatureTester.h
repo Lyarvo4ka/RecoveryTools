@@ -63,7 +63,15 @@ public:
 	ExtensionName getExtension(const IO::path_string& filename)
 	{
 		fs::path filePath(filename);
-		return filePath.extension().generic_string();
+		ExtensionName extName = "unknown";
+		try {
+			extName = filePath.extension().generic_string();
+		}
+		catch (...)
+		{
+			std::cout << "cought unkown exception in std::filesystem::path extension" << std::endl;
+		}
+		return extName;
 	}
 
 	std::list<RAW::FileStruct> getListFileStructFromListFormatName(const ListFormatName& listFormatName)
