@@ -42,6 +42,8 @@ namespace IO
 		dbf_header dbf_data = { 0 };
 		auto bytes_read = dbf_file->ReadData((IO::ByteArray) & dbf_data, dbf_header_size);
 
+		bool bHasNulls = false;
+
 		if (dbf_data.header_size == 0)
 		{
 			wprintf(L"Header size is 0.");
@@ -101,6 +103,7 @@ namespace IO
 			else
 			{
 				wprintf(L"Has nulls.");
+				bHasNulls = true;
 			}
 			offset += data_buffer->size();
 		}
@@ -109,7 +112,8 @@ namespace IO
 		uint32_t numRecords = 0;
 		numRecords = tmp_size - dbf_data.header_size - 1;
 		numRecords /= dbf_data.record_size;
-		++numRecords;
+		//if (bHasNulls)
+			++numRecords;
 
 
 		auto new_size = dbf_data.header_size + numRecords * dbf_data.record_size + 1;

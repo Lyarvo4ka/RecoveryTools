@@ -226,24 +226,28 @@ int wmain(int argc, wchar_t* argv[])
 		//IO::path_string backup = LR"(g:\50658\BASE_ANR_OFFICE.bak)";
 
 		//replaceEncryptWithBackup(enc, backup);
-	//if ( argc == PARAM_COUNT)
-	//{
-	//	
-	//	IO::path_string withBads = argv[WITH_BADS];
-	//	IO::path_string withoutBads = argv[WITHOUT_BADS];
-	//	IO::path_string target = argv[TARGET];
+	const char bad_sector_array[] = { 0x62 , 0x61 , 0x64 , 0x20 , 0x73 , 0x65 , 0x63 , 0x74 , 0x6F , 0x72 };
+	constexpr uint32_t bad_sector_array_size = SIZEOF_ARRAY(bad_sector_array);
+	IO::DataArray bad_secotr_marker(bad_sector_array_size);
+	std::memcpy(bad_secotr_marker.data(), bad_sector_array, bad_secotr_marker.size());
+	if ( argc == PARAM_COUNT)
+	{
+		
+		IO::path_string withBads = argv[WITH_BADS];
+		IO::path_string withoutBads = argv[WITHOUT_BADS];
+		IO::path_string target = argv[TARGET];
 
-	//	//fixAllDbfFiles(foldername);
-		IO::replaceBadsFromOtherFile(withBads, withoutBads, target);
-	//	 
-	//	_CrtDumpMemoryLeaks();
-	//	std::cout << std::endl << " FINISHED "; 
-	//}
-	//else
-	//{
-	//	std::cout << " Wrong params. " << std::endl ;
-	//	std::cout << std::endl << " AppName.exe withBads withoutBads target " << std::endl ;
-	//}
+		//fixAllDbfFiles(foldername);
+		IO::replaceBadsFromOtherFile(withBads, withoutBads, target, bad_secotr_marker);
+		 
+		_CrtDumpMemoryLeaks();
+		std::cout << std::endl << " FINISHED "; 
+	}
+	else
+	{
+		std::cout << " Wrong params. " << std::endl ;
+		std::cout << std::endl << " AppName.exe withBads withoutBads target " << std::endl ;
+	}
 	 
 	return 0;
 }

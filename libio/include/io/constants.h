@@ -180,6 +180,9 @@ namespace Signatures
 	const uint8_t zbk_footer[] = { 0x50 , 0x4B , 0x05 , 0x06 , 0x00 , 0x00 , 0x00 , 0x00 };
 	const uint32_t zbk_footer_size = SIZEOF_ARRAY(zbk_footer);
 
+	const char FILE0[] = { 0x46 , 0x49 , 0x4C , 0x45 };
+	constexpr uint32_t sizeFILE0 = SIZEOF_ARRAY(FILE0);
+
 	using u8 = unsigned char;
 	using u16 = unsigned short;
 	struct zbh_header_t

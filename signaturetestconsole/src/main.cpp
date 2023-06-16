@@ -226,64 +226,64 @@ int test_signatures(const IO::path_string & folderToTest)
 
 #include "io\utility.h"
 
-int main(int argc, char* argv[])
-{
-	
-	QCoreApplication a(argc, argv);
-	if (argc == 2)
-	{
-		const auto folder_value = argv[1];
-		std::string folder_string = folder_value;
-		IO::path_string folderToTest = toWstring_cast(folder_string);
-
-		setlocale(LC_ALL, "Russian");
-		try
-		{
-			test_signatures(folderToTest);
-
-		}
-		catch (const Error::IOErrorException& ex)
-		{
-			std::cout << "Caught exception " << ex.what() << std::endl;
-		}
-		catch (...)
-		{
-			std::cout << "Caught unknown exception" << std::endl;
-		}
-
-	}
-	else
-		std::cout << "Wrong params" << std::endl;
-
-
-	//	IO::Finder finder;
-	////finder.add_extension(L".mp3");
-	//finder.FindFiles(folderToTest);
-
-	//SignatureTester signTester;
-	//signTester.setExtensionBase(extBase);
-	//signTester.setSignatureBase(signBase);
-
-	//IO::DataArray buffer(default_sector_size);
-
-	//for (auto fileToTest : finder.getFiles())
-	//{
-	//	IO::File file(fileToTest);
-	//	file.OpenRead();
-	//	if (file.Size() > default_sector_size)
-	//	{
-	//		file.ReadData(buffer);
-	//		file.Close();
-
-	//		if (IO::isBlockContainsValue(buffer.data() , buffer.size(), 0x00) )
-	//			rename_to_bad_file(fileToTest);
-	//	}
-	//}
-
-
-	qDebug() << "Finished.";
-	return a.exec();
-}
+//int main(int argc, char* argv[])
+//{
+//	
+//	QCoreApplication a(argc, argv);
+//	if (argc == 2)
+//	{
+//		const auto folder_value = argv[1];
+//		std::string folder_string = folder_value;
+//		IO::path_string folderToTest = toWstring_cast(folder_string);
+//
+//		setlocale(LC_ALL, "Russian");
+//		try
+//		{
+//			test_signatures(folderToTest);
+//
+//		}
+//		catch (const Error::IOErrorException& ex)
+//		{
+//			std::cout << "Caught exception " << ex.what() << std::endl;
+//		}
+//		catch (...)
+//		{
+//			std::cout << "Caught unknown exception" << std::endl;
+//		}
+//
+//	}
+//	else
+//		std::cout << "Wrong params" << std::endl;
+//
+//
+//	//	IO::Finder finder;
+//	////finder.add_extension(L".mp3");
+//	//finder.FindFiles(folderToTest);
+//
+//	//SignatureTester signTester;
+//	//signTester.setExtensionBase(extBase);
+//	//signTester.setSignatureBase(signBase);
+//
+//	//IO::DataArray buffer(default_sector_size);
+//
+//	//for (auto fileToTest : finder.getFiles())
+//	//{
+//	//	IO::File file(fileToTest);
+//	//	file.OpenRead();
+//	//	if (file.Size() > default_sector_size)
+//	//	{
+//	//		file.ReadData(buffer);
+//	//		file.Close();
+//
+//	//		if (IO::isBlockContainsValue(buffer.data() , buffer.size(), 0x00) )
+//	//			rename_to_bad_file(fileToTest);
+//	//	}
+//	//}
+//
+//
+//	qDebug() << "Finished.";
+//	return a.exec();
+//}
 
 //
 //int main(int argc, char *argv[])

@@ -2,6 +2,44 @@
 
 #include "io/entropy.h"
 
+void xorDiskWithSector(const uint32_t disk_number, const IO::path_string& filepath)
+{
+	auto listDisk = IO::ReadPhysicalDrives();
+	auto physicalDrive = listDisk.find_by_number(disk_number);
+	if (physicalDrive == nullptr)
+		return;
+
+	IO::DiskDevice disk(physicalDrive);
+	disk.Open(IO::OpenMode::OpenRead);
+
+	IO::File fileSector(filepath);
+	fileSector.OpenRead();
+	IO::DataArray sector(default_sector_size);
+	fileSector.ReadData(sector);
+
+	IO::File target(filepath + L".result");
+	target.OpenCreate();
+
+	uint64_t offset = 0;
+	IO::DataArray buff(default_block_size);
+
+	while (offset < disk.Size())
+	{
+		disk.setPosition(offset);
+		disk.ReadData(buff.data(), buff.size());
+
+		for (uint32_t i = 0; i < buff.size(); ++i)
+		{
+			buff[i] = buff[i] ^ sector[i % 512];
+		}
+
+		target.WriteData(buff.data(), buff.size());
+
+		offset += buff.size();
+	}
+
+}
+
 //int XorAnalyzerFunc(int argc, wchar_t* argv[])
 //{
 //	if (argc == 4)
@@ -134,11 +172,14 @@ void splitByPages(const IO::path_string& filename , const IO::path_string folder
 
 int wmain(int argc, wchar_t* argv[])
 {
+	//xorWithBlock_main(argc, argv);
+	IO::path_string filename = LR"(d:\52729\102481)";
+	xorDiskWithSector(0, filename);
 	//myltipyBy_mainFunc(argc , argv);
 	//XorFilesFunc(argc, argv);
-	IO::path_string filename = LR"(z:\50452\50452_0.dat)";
-	IO::path_string folder = LR"(y:\50452\)";
-	splitByPages(filename, folder);
+	//IO::path_string filename = LR"(d:\52729\102351)";
+	//IO::path_string folder = LR"(y:\50452\)";
+	//splitByPages(filename, folder);
 	//IO::calcEntropyForFolder(folder, 32768);
 	
 

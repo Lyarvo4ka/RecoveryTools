@@ -254,6 +254,42 @@ void savePopularBlock(const IO::path_string& source_filename, uint32_t block_siz
 }
 
 
+void modify_mft_by_id(const IO::path_string& src_filename)
+{
+	IO::File source(src_filename);
+	source.OpenRead();
+
+	IO::File target(src_filename + L".result");
+	target.OpenCreate();
+
+	const uint32_t EntrySize = 1024;
+
+	IO::DataArray buff(EntrySize);
+	uint64_t offset = 0;
+	IO::DataArray target_buff(EntrySize);
+
+	const uint32_t ntfs_id_offset = 44;
+
+	while (offset < source.Size())
+	{
+		source.setPosition(offset);
+		source.ReadData(buff);
+
+		if (memcmp(Signatures::FILE0, buff.data(), Signatures::sizeFILE0) == 0)
+		{
+			uint32_t* pNTFS_id = (uint32_t*)(buff.data() + ntfs_id_offset);
+			if ((*pNTFS_id * 2) < source.Size())
+			{
+				target.setPosition(*pNTFS_id * EntrySize);
+				target.WriteData(buff.data(), buff.size());
+			}
+		}
+		offset += EntrySize;
+	}
+
+
+}
+
 void modify_mft(const IO::path_string& src_filename)
 {
 	IO::File source(src_filename);
@@ -268,20 +304,15 @@ void modify_mft(const IO::path_string& src_filename)
 	uint64_t offset = 0;
 	IO::DataArray target_buff(EntrySize);
 
-
-	const char FILE0[] = { 0x46 , 0x49 , 0x4C , 0x45 };
-	constexpr uint32_t sizeFILE0 = SIZEOF_ARRAY(FILE0);
-
-
 	while (offset < source.Size())
 	{
 		source.setPosition(offset);
 		source.ReadData(buff);
 
-		if (memcmp(FILE0, buff.data(), sizeFILE0) == 0)
+		if (memcmp(Signatures::FILE0, buff.data(), Signatures::sizeFILE0) == 0)
 			memcpy(target_buff.data(), buff.data(), EntrySize);
 		else
-			memcpy(target_buff.data(), buff.data()+ sizeFILE0, EntrySize- sizeFILE0);
+			memcpy(target_buff.data(), buff.data()+ Signatures::sizeFILE0, EntrySize- Signatures::sizeFILE0);
 
 		target.WriteData(target_buff.data(), target_buff.size());
 		offset += EntrySize;
@@ -290,9 +321,88 @@ void modify_mft(const IO::path_string& src_filename)
 
 }
 
+void modifyAVI(const IO::path_string& src_filename)
+{
+	IO::File source(src_filename);
+	source.OpenWrite();
+
+	auto new_size = source.Size() - 8;
+	source.setSize(new_size);
+	source.Close();
+
+
+}
+
+void renameToCR3(const IO::path_string& src_filename)
+{
+	const char CR3_Header[] = { 0x66 , 0x74 , 0x79 , 0x70 , 0x63 , 0x72 , 0x78 , 0x20 };
+	const uint32_t CR3_Header_size = SIZEOF_ARRAY(CR3_Header);
+
+	IO::File source(src_filename);
+	source.OpenRead();
+
+	IO::DataArray buff(default_sector_size);
+	source.ReadData(buff);
+	source.Close();
+
+	if (memcmp(buff.data() + 4 , CR3_Header, CR3_Header_size) == 0)
+		std::filesystem::rename(src_filename, src_filename + L".CR3");
+
+	
+
+
+
+}
+
+#include "io/diskdevice.h"
+
+void xor_disks( const std::vector<int> &nubers, const IO::path_string& outFile, const uint64_t offset , const uint32_t xor_size = 1024)
+{
+	auto listDisk = IO::ReadPhysicalDrives();
+	IO::DataArray xor_buff (xor_size);
+	ZeroMemory(xor_buff.data(), xor_buff.size());
+
+	IO::DataArray buff(xor_size);
+	for (auto diskNumber : nubers)
+	{
+		auto diskPtr = listDisk.find_by_number(diskNumber);
+		if (diskPtr == nullptr)
+		{
+			printf("Error find disk %d", diskNumber);
+			return;
+		}
+
+		auto disk = IO::DiskDevice(diskPtr);
+		disk.Open(IO::OpenMode::OpenRead);
+
+		disk.setPosition(offset);
+		disk.ReadData(buff.data(), buff.size());
+
+		for (auto i = 0; i < xor_buff.size(); ++i)
+		{
+			xor_buff[i] ^= buff[i];
+		}
+	}
+
+	IO::File target(outFile);
+	target.OpenCreate();
+	target.WriteData(xor_buff.data(), xor_buff.size());
+
+
+}
+
 
 int wmain(int argc, wchar_t* argv[])
 {
+	//std::vector<int> listDisk = { 3,4,5,10,8};
+	//IO::path_string target = LR"(d:\52598\xor)";
+	//uint64_t offset = (uint64_t)77323 * 64*1024;
+	//xor_disks(listDisk, target, offset);
+	// 
+	//IO::path_string mft_filename = LR"(d:\52778\mft_part1)";
+	//modify_mft_by_id(mft_filename);
+	IO::RestoreRootObject();
+
 	//IO::path_string file1 = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH.mdf)";
 	//IO::path_string file2 = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH.mdf_old)";
 	//IO::path_string result = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH_result)";
@@ -307,16 +417,19 @@ int wmain(int argc, wchar_t* argv[])
 
 	//IO::RestoreRootObject();
 
-	IO::path_string foldername = LR"(z:\52036\Task\bad_sector\BASES\to_fix\)";
+
+	//IO::path_string foldername = LR"(e:\52394\video\mov\)";
 	//IO::Finder finder;
 	//finder.FindFiles(foldername);
 	//for (const auto& fileName : finder.getFiles())
 	//{
-	//	IO::RenamePSD_date(fileName);
+	//	renameToCR3(fileName);
+	//	//modifyAVI(fileName);
+
 	//}
 
 	//IO::path_string filename = LR"(c:\tmp\audio.bin)";
-	//IO::path_string foldername = LR"(c:\tmp\)";
+	IO::path_string foldername = LR"(z:\52696\Partition2\!Problem\)";
 	//splitToFiles(filename, foldername);
 
 	
@@ -329,7 +442,7 @@ int wmain(int argc, wchar_t* argv[])
 	//	IO::moveToDateFolder(fileName, foldername);
 	//}
 
-	fixAllDbfFiles(foldername);
+	//fixAllDbfFiles(foldername);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";

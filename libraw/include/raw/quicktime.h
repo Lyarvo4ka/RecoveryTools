@@ -72,6 +72,8 @@ namespace RAW
 		return (memcmp(pQtBlock.block_type, keyword_name, qt_keyword_size) == 0);
 	}
 
+
+
 	inline bool verify_region(const uint64_t start, const uint64_t size)
 	{
 		return start < size;

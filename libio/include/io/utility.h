@@ -595,7 +595,7 @@ namespace IO
 										 const path_string& withoutBads_name, 
 		                                 const path_string& target_name , 
 										 const DataArray & marker, 
-										 const uint32_t sector_size)
+										 const uint32_t sector_size = default_sector_size)
 	{
 		File withBads_file(withBads_name);
 		withBads_file.Open(OpenMode::OpenRead);

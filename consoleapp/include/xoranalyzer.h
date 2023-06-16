@@ -4,10 +4,57 @@
 
 #include "io/utility.h"
 #include "io/IODevice.h"
+#include "io/diskdevice.h"
 
 #pragma warning(disable:4251)
 
 using namespace IO;
+	
+	
+	void xorWithBlock(IODevicePtr& source, IODevicePtr& target, const DataArray & xor)
+	{
+		uint64_t offset = 0;
+		uint32_t block_size = default_block_size;
+		DataArray buff1(default_block_size);
+		DataArray resBuff(default_block_size);
+
+		while (offset < source->Size())
+		{
+			block_size = calcBlockSize(offset, source->Size(), default_block_size);
+			source->setPosition(offset);
+			source->ReadData(buff1.data(), block_size);
+
+			for (uint32_t i = 0; i < block_size; ++i)
+			{
+				resBuff[i] = buff1[i] ^ xor[i % xor.size()];
+
+			}
+			target->setPosition(offset);
+			target->WriteData(resBuff.data(), resBuff.size());
+			offset += block_size;
+		}
+
+	}
+	int xorWithBlock_main(int argc, wchar_t* argv[])
+	{
+		const uint32_t driveNumber = 2;
+		auto listDrives = IO::ReadPhysicalDrives();
+		auto physicalDrivePtr = listDrives.find_by_number(driveNumber);
+		IODevicePtr sorucePtr = std::make_shared<DiskDevice>(physicalDrivePtr);
+		sorucePtr->Open(IO::OpenMode::OpenRead);
+
+		IO::DataArray xor(default_sector_size);
+		IO::path_string xorFileName = LR"(z:\tmp\Prestigio\xor5)";
+		IO::File xorFile(xorFileName);
+		xorFile.OpenRead();
+		xorFile.ReadData(xor);
+
+		IODevicePtr targetPtr = makeFilePtr(LR"(d:\Prestigio\decrypted)");
+		targetPtr->Open(IO::OpenMode::Create);
+		xorWithBlock(sorucePtr, targetPtr, xor);
+
+		return 0;
+	}
 
 	void xor_files(const path_string& filename1, const path_string& filename2, const path_string& resultfilename)
 	{

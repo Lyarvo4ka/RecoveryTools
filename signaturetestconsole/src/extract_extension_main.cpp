@@ -2,33 +2,48 @@
 #include "signatureTester.h"
 #include "extensionextractor.h"
 #include "json/signaturereader.h"
+#include "raw/quicktime.h"
+
+IO::path_string getExtensionFromQtFile(const path_string& filename)
+{
+
+}
 
 int extract_extension()
 {
 
-	ExtensionExtractor extExtractor;
+	//ExtensionExtractor extExtractor;
 
-	IO::path_string singFolder = LR"(c:\soft\!MyPrograms\SignatureTestConsole\signatures\)";
-	SignatureReader signReader;
-	signReader.loadAllSignatures(singFolder, L".json");
+	//IO::path_string singFolder = LR"(c:\soft\!MyPrograms\SignatureTestConsole\signatures\)";
+	//SignatureReader signReader;
+	//signReader.loadAllSignatures(singFolder, L".json");
 
-	auto headerBase = std::make_shared<RAW::HeaderBase>();
-	for (const auto& jsonFileStruct : signReader.getAllSignatures())
-	{
-		headerBase->addFileFormat(toUniqueFileStruct(jsonFileStruct));
-	}
+	//auto headerBase = std::make_shared<RAW::HeaderBase>();
+	//for (const auto& jsonFileStruct : signReader.getAllSignatures())
+	//{
+	//	headerBase->addFileFormat(toUniqueFileStruct(jsonFileStruct));
+	//}
 
-	extExtractor.setHeaderBase(headerBase);
+	//extExtractor.setHeaderBase(headerBase);
 
 	IO::Finder finder;
-	finder.FindFiles(LR"(e:\lost+found\)");
+	finder.FindFiles(LR"(h:\52521\NoName\video\mov\)");
 	//finder.add_extension(L"*.chk");
 	auto all_files = finder.getFiles();
+	for (auto& testFile : all_files)
+	{
+		auto ext = getExtensionFromQtFile(testFile);
+		if (!ext.empty())
+			fs::rename(testFile, testFile + ext);
+	}
 	//auto listFiles = getFilesWithoutExtension(all_files);
 
-	extExtractor.extract_extensions(all_files);
+	//extExtractor.extract_extensions(all_files);
+	
 	return 0;
 }
+
+
 
 inline int NotNullPosFromEnd(const ByteArray data, const uint32_t size)
 {
@@ -77,21 +92,21 @@ inline void removeNullsFromEndFile(const path_string& file_path, uint32_t sizeTo
 }
 
 
-	//int main(int argc, char* argv[])
-	//{
+	int main(int argc, char* argv[])
+	{
 
-	//	QCoreApplication a(argc, argv);
+		QCoreApplication a(argc, argv);
 
-	//	extract_extension();
-	//	//IO::Finder finder;
-	//	//finder.FindFiles(LR"(d:\51098\result\pdf\)");
-	//	//auto fileList = finder.getFiles();
+		extract_extension();
+		//IO::Finder finder;
+		//finder.FindFiles(LR"(d:\51098\result\pdf\)");
+		//auto fileList = finder.getFiles();
 
-	//	//for (const auto& filename : fileList)
-	//	//{
-	//	//	removeNullsFromEndFile(filename, 4096);
-	//	//}
+		//for (const auto& filename : fileList)
+		//{
+		//	removeNullsFromEndFile(filename, 4096);
+		//}
 
-	//	qDebug() << "Finished.";
-	//	return a.exec();
-	//}
+		qDebug() << "Finished.";
+		return a.exec();
+	}
