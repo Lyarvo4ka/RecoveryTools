@@ -18,7 +18,7 @@ void fixAllDbfFiles(const IO::path_string & folder)
 
 void createManyExcelFiles()
 {
-	IO::path_string src_excel = LR"(d:\PaboTa\tmp\23.ÂÅÑÍÀ 2021 ÊÀÑÀ.xls)";
+	IO::path_string src_excel = LR"(d:\PaboTa\tmp\23.ï¿½ï¿½ï¿½ï¿½ï¿½ 2021 ï¿½ï¿½ï¿½ï¿½.xls)";
 	IO::path_string target_folder = LR"(f:\xls\)";
 	IO::path_string img_file = LR"(y:\49655\49655.img)";
 
@@ -392,8 +392,11 @@ void xor_disks( const std::vector<int> &nubers, const IO::path_string& outFile, 
 }
 
 
+#include "raw/qtfragment.h"
 int wmain(int argc, wchar_t* argv[])
 {
+	IO::path_string filepath = LR"(d:\52598\xor)";
+	SavePos_ftyp_mdat(filepath);
 	//std::vector<int> listDisk = { 3,4,5,10,8};
 	//IO::path_string target = LR"(d:\52598\xor)";
 	//uint64_t offset = (uint64_t)77323 * 64*1024;
@@ -401,7 +404,7 @@ int wmain(int argc, wchar_t* argv[])
 	// 
 	//IO::path_string mft_filename = LR"(d:\52778\mft_part1)";
 	//modify_mft_by_id(mft_filename);
-	IO::RestoreRootObject();
+	//IO::RestoreRootObject();
 
 	//IO::path_string file1 = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH.mdf)";
 	//IO::path_string file2 = LR"(f:\51900\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Data\ANDBUH.mdf_old)";
@@ -429,7 +432,7 @@ int wmain(int argc, wchar_t* argv[])
 	//}
 
 	//IO::path_string filename = LR"(c:\tmp\audio.bin)";
-	IO::path_string foldername = LR"(z:\52696\Partition2\!Problem\)";
+	//IO::path_string foldername = LR"(z:\52696\Partition2\!Problem\)";
 	//splitToFiles(filename, foldername);
 
 	
