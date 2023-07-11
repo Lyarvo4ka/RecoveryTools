@@ -3,10 +3,13 @@
 #include "extensionextractor.h"
 #include "json/signaturereader.h"
 #include "raw/quicktime.h"
+#include "analyzer.h"
 
 IO::path_string getExtensionFromQtFile(const path_string& filename)
 {
-
+	QuickTimeAnalyzer qtAnalyzer(filename);
+	qtAnalyzer.analyze();
+		return qtAnalyzer.getInfo().getExtension();
 }
 
 int extract_extension()
@@ -27,14 +30,14 @@ int extract_extension()
 	//extExtractor.setHeaderBase(headerBase);
 
 	IO::Finder finder;
-	finder.FindFiles(LR"(h:\52521\NoName\video\mov\)");
-	//finder.add_extension(L"*.chk");
+	finder.FindFiles(LR"(d:\tmp\MOV\)");
+	finder.add_extension(L"*.*");
 	auto all_files = finder.getFiles();
 	for (auto& testFile : all_files)
 	{
 		auto ext = getExtensionFromQtFile(testFile);
 		if (!ext.empty())
-			fs::rename(testFile, testFile + ext);
+			fs::rename(testFile, testFile + L"." + ext);
 	}
 	//auto listFiles = getFilesWithoutExtension(all_files);
 

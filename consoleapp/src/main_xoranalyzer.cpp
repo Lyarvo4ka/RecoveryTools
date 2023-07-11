@@ -174,7 +174,7 @@ int wmain(int argc, wchar_t* argv[])
 {
 	//xorWithBlock_main(argc, argv);
 	IO::path_string filename = LR"(d:\52729\102481)";
-	xorDiskWithSector(0, filename);
+	xorDiskWithSector(4, filename);
 	//myltipyBy_mainFunc(argc , argv);
 	//XorFilesFunc(argc, argv);
 	//IO::path_string filename = LR"(d:\52729\102351)";

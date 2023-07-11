@@ -55,4 +55,5 @@ namespace IO
 	};
 
 	DataArray::Ptr makeDataArray(uint32_t size);
+	std::list<std::string> getListFromArray(const DataArray& textArray);
 }

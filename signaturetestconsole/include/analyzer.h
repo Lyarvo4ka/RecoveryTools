@@ -4,14 +4,23 @@
 class FileInfo
 {
 	IO::path_string filepath_;
+	IO::path_string extension_;
 public:
 	FileInfo(const IO::path_string& filepath) 
-	:filepath_(filepath_)
+	:filepath_(filepath)
 	{
 	}
-	IO::path_string getFilepath()
+	IO::path_string getFilepath() const
 	{
 		return filepath_;
+	}
+	void setExtension(const IO::path_string& extension)
+	{
+		extension_ = extension;
+	}
+	IO::path_string getExtension() const
+	{
+		return extension_;
 	}
 
 };
@@ -33,6 +42,22 @@ public:
 	{
 
 	}
+	void extensionFromFtypText (const std::string& ftyp_text)
+	{
+
+		if (ftyp_text.compare("crx") == 0 )
+			fileInfo_.setExtension( L"CR3");
+		else if (ftyp_text.compare("m4a") == 0)
+			fileInfo_.setExtension(L"m4a");
+		else if (ftyp_text.compare("qt") == 0)
+			fileInfo_.setExtension(L"mp4");
+		else if (ftyp_text.compare("mp4") == 0)
+			fileInfo_.setExtension(L"mp4");
+		else if (ftyp_text.compare("avc") == 0)
+			fileInfo_.setExtension(L"mp4");
+		else if (ftyp_text.compare("3gp") == 0)
+			fileInfo_.setExtension(L"3gp");
+	}
 	void analyze() override
 	{
 		auto testFilePtr = IO::makeFilePtr(fileInfo_.getFilepath());
@@ -42,25 +67,26 @@ public:
 		auto qtHandle = qtRaw.readQtAtom(0);
 		if (qtHandle.isValid())
 		{
-			if (qtHandle.compareKeyword("ftyp")
+			if (qtHandle.compareKeyword("ftyp"))
 			{
-				IO::DataArray buff(qtHandle.size());
-				qtFilePtr->setPosition(0);
-				qtFilePtr->ReadData(buff);
-				//if (memcmp(buff.data(), m4a_text, m4a_text_size) == 0)
-				//	return IO::path_string(L"m4a");
+				auto ftypData = qtRaw.readFtypData(qtHandle);
+				std::string ftyp_text((const char *)ftypData.data());
+				ftyp_text.erase(std::remove(ftyp_text.begin(), ftyp_text.end(), ' ') , ftyp_text.end() ); // std::remove(str.begin(), str.end(), 'a'), str.end()
+				std::cout << ftyp_text << std::endl;
+				extensionFromFtypText(ftyp_text);
+
+				//auto ftypList = getListFromArray(ftypData);
+
+				int k = 1;
+				k = 2;
 
 			}
+			else
+				std::cout << "not ftyp handle" << std::endl;
 
 		}
-
-		//return IO::path_string();
-
 	}
-	IO::path_string analyze_extension()
-	{
 
-	}
 	FileInfo getInfo() const
 	{
 		return fileInfo_;

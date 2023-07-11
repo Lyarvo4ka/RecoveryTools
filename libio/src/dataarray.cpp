@@ -63,4 +63,22 @@ namespace IO
 	{
 		return std::make_unique<DataArray>(size);
 	}
+	std::list<std::string> getListFromArray(const DataArray& textArray)
+	{
+		std::list<std::string> listName;
+		std::uint64_t pos = 0;
+		std::string text;
+		while (pos < textArray.size())
+		{
+			if (textArray[pos] == 0)
+			{
+				listName.emplace_back(text);
+				text.clear();
+			}
+			else
+				text.append((const char*)textArray[pos]);
+		}
+
+		return listName;
+	}
 }

@@ -95,44 +95,44 @@ namespace IO
 	{
 		constexpr uint32_t PAGE_SIZE = 4 * 1024;
 
-		File db(LR"(d:\52799\1Cv8.1CD_enc)");
+		File db(LR"(d:\52774\1Cv8.1CD)");
 		db.OpenRead();
 
-		File root_object(LR"(d:\52799\root_object.dat)");
+		File root_object(LR"(d:\52774\root_object.dat)");
 		root_object.OpenCreate();
 
-			const size_t page_size = PAGE_SIZE;
-			const uint32_t max_page = db.Size() / page_size;
+		const size_t page_size = PAGE_SIZE;
+		const uint32_t max_page = db.Size() / page_size;
 
-			uint32_t page = 0;
-			size_t valid_objects = 0;
-			DataArray buffer(page_size);
+		uint32_t page = 0;
+		size_t valid_objects = 0;
+		DataArray buffer(page_size);
 
-			page = 3;
-			uint64_t offset = page_size * page;
-			db.setPosition(offset);
+		page = 3;
+		uint64_t offset = page_size * page;
+		db.setPosition(offset);
 
-			while (offset < db.Size())
-			{
-				db.ReadData(buffer);
-				if (std::memcmp(buffer.data(), "1CDBOBV8", 8) == 0) {
+		while (offset < db.Size())
+		{
+			db.ReadData(buffer);
+			if (std::memcmp(buffer.data(), "1CDBOBV8", 8) == 0) {
 
-					ObjectHeader* obj_header = (ObjectHeader*)buffer.data();
-					if (IsValidDbObject(db, *obj_header, page_size, max_page)) {
-						root_object.WriteData((ByteArray)&page, sizeof(page));
-						valid_objects++;
-					}
+				ObjectHeader* obj_header = (ObjectHeader*)buffer.data();
+				if (IsValidDbObject(db, *obj_header, page_size, max_page)) {
+					root_object.WriteData((ByteArray)&page, sizeof(page));
+					valid_objects++;
 				}
-				page++;
-				auto position = page_size * page;
-
-				db.setPosition(position);
-				offset = position;
-				int k = 1;
-				k = 2;
 			}
+			page++;
+			auto position = page_size * page;
+
+			db.setPosition(position);
+			offset = position;
 			int k = 1;
 			k = 2;
+		}
+		int k = 1;
+		k = 2;
 
 
 	}

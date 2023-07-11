@@ -224,19 +224,22 @@ namespace RAW
 		virtual ~QuickTimeRaw()
 		{
 		}
-
-		DataArray readFtypData(const QtHandle& ftyp_handle)
+		DataArray readQtHandleData(const QtHandle& qtHandle)
 		{
-			if (ftyp_handle.isValid())
-				if (ftyp_handle.size() > qt_block_struct_size)
+			if (qtHandle.isValid())
+				if (qtHandle.size() > qt_block_struct_size)
 				{
-					auto ftypdata_size = ftyp_handle.size() - qt_block_struct_size;
-					DataArray ftyp_data(ftypdata_size);
-					this->setPosition(ftyp_handle.offset() + qt_block_struct_size);
-					this->ReadData(ftyp_data);
-					return ftyp_data;
+					auto data_size = qtHandle.size() - qt_block_struct_size;
+					DataArray handle_data(data_size);
+					this->setPosition(qtHandle.offset() + qt_block_struct_size);
+					this->ReadData(handle_data);
+					return handle_data;
 				}
 			return DataArray(0);
+		}
+		DataArray readFtypData(const QtHandle& ftyp_handle)
+		{
+			return readQtHandleData(ftyp_handle);
 		}
 
 
