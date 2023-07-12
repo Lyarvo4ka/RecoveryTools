@@ -71,6 +71,7 @@ target_link_libraries(ext4_raw libio)
 target_link_libraries(ReplaceBads libio)
 target_link_libraries(XorAnalyzer libio)
 target_link_libraries(fix_dbf libio)
+target_link_libraries(fix_dbf libraw)
 target_link_libraries(FleshCollector libio)
 # target_link_libraries(FileOffsetsWriter IO::libio)
 

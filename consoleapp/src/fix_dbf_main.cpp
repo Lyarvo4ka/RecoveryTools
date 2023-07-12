@@ -396,7 +396,13 @@ void xor_disks( const std::vector<int> &nubers, const IO::path_string& outFile, 
 int wmain(int argc, wchar_t* argv[])
 {
 	IO::path_string filepath = LR"(d:\52598\xor)";
-	SavePos_ftyp_mdat(filepath);
+	RAW::SavePos_ftyp_mdat(filepath);
+
+	IO::path_string sourcefile = LR"(d:\52598\xor)";
+	IO::path_string ftyppath = LR"(d:\52598\xor)";
+	IO::path_string mdatpath = LR"(d:\52598\xor)";
+	IO::path_string targetFolder = LR"(d:\52598\xor)";
+	//RAW::saveQtFragment(sourcefile, ftyppath, mdatpath, targetFolder);
 	//std::vector<int> listDisk = { 3,4,5,10,8};
 	//IO::path_string target = LR"(d:\52598\xor)";
 	//uint64_t offset = (uint64_t)77323 * 64*1024;
