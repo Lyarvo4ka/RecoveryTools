@@ -33,7 +33,7 @@ namespace RAW
 
             for (uint32_t i = 0; i < buff.size(); i += default_sector_size)
             {
-                qt_block_t * pQtBlock = (qt_block_t *)buff[i];
+                qt_block_t * pQtBlock = (qt_block_t *)(buff.data() + i);
                 uint64_t marker_offset = offset + i;
                 if (isQuickTimeKeyword(*pQtBlock , s_ftyp) )
                     appendOffsetToFile(ftyp_txt,marker_offset);
@@ -41,7 +41,11 @@ namespace RAW
                 {
                     appendOffsetToFile(mdat_txt, marker_offset);
                 }
-                
+                else if (isQuickTimeKeyword(*pQtBlock, s_free))
+                {
+                    appendOffsetToFile(mdat_txt, marker_offset);
+                }
+
             }
 
 
@@ -66,7 +70,7 @@ namespace RAW
                     const uint64_t firstPartSize,
                      IO::FilePtr  srcFile   )
     {
-        const uint32_t MARKER = 0x000000;
+        const uint32_t MARKER = 0x02000000;
         IO::DataArray buff(4);
         uint64_t offset = 0;
         auto tableSize = numCMP * sizeof(uint32_t);
@@ -77,8 +81,9 @@ namespace RAW
             if (markerPos > firstPartSize)
             {
                 uint64_t markerOffset = mdat_offset + markerPos - firstPartSize;
+                srcFile->setPosition(markerOffset);
                 srcFile->ReadData(buff);
-                if (memcmp(buff.data(), (void*)MARKER, 4) != 0)
+                if (memcmp(buff.data(), (void*)&MARKER, 4) != 0)
                     return false;
             }
 
@@ -109,20 +114,22 @@ namespace RAW
             if (!moovHandle.isValid())
                 continue;
             auto freeHandleoffset = ftypOffset + ftypHandle.size() + moovHandle.size();
+            uint64_t freeSize = 0;
             auto freeHandle = qtRaw.readQtAtom(freeHandleoffset);
-            if (!freeHandle.isValid())
-                continue;
-            auto firstPartSize = ftypHandle.size() + moovHandle.size()  + freeHandle.size();
+            if (freeHandle.isValid())
+                freeSize = freeHandle.size();
+            auto firstPartSize = ftypHandle.size() + moovHandle.size()  + freeSize;
 
-            auto moovData = qtRaw.readQtHandleData(moovHandle);
-            auto STCOPos = findSTCOposition(moovData);
+            auto moovData = qtRaw.readQtHandleData(moovHandle); 
+            auto STCOPos = findSTCOposition(moovData); // 
             STCO_Table * pSTCO = (STCO_Table *)moovData[STCOPos];
             for (auto mdatOffset : mdatList)
             {
-                auto tableBlock = pSTCO->stco_block; 
-                uint64_t markerStart = sizeof(STCO_Table) + STCOPos;
+                //auto tableBlock = pSTCO->stco_block; 
+                uint64_t markerStart = ftypOffset + sizeof(STCO_Table) + STCOPos + 4 + ftypHandle.size();
                 auto tableSize = NUM_CMP * sizeof(uint32_t);
                 IO::DataArray markerTable(tableSize);
+                sourcePtr->setPosition(markerStart);
                 sourcePtr->ReadData(markerTable);
                 uint32_t* pTable = (uint32_t*)markerTable.data();
 
@@ -133,6 +140,13 @@ namespace RAW
                     targetFile.OpenCreate();
                     qtRaw.appendToFile(targetFile, ftypOffset, firstPartSize);
                     auto mdatHadle = qtRaw.readQtAtom(mdatOffset);
+                    if (mdatHadle.compareKeyword("free"))
+                    { 
+                        auto free_size = qtRaw.readQtAtomSize(mdatHadle.size(), mdatOffset);
+                        qtRaw.appendToFile(targetFile, mdatOffset, free_size);
+                        mdatOffset += free_size;
+                        mdatHadle = qtRaw.readQtAtom(mdatOffset);
+                    }
                     auto mdatSize = qtRaw.readQtAtomSize(mdatHadle.size(), mdatOffset);
                     qtRaw.appendToFile(targetFile, mdatOffset, mdatSize);
                 }

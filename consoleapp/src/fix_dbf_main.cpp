@@ -395,13 +395,13 @@ void xor_disks( const std::vector<int> &nubers, const IO::path_string& outFile, 
 #include "raw/qtfragment.h"
 int wmain(int argc, wchar_t* argv[])
 {
-	IO::path_string filepath = LR"(d:\52598\xor)";
-	RAW::SavePos_ftyp_mdat(filepath);
+	//IO::path_string filepath = LR"(c:\52898\52898.img)";
+	//RAW::SavePos_ftyp_mdat(filepath);
 
-	IO::path_string sourcefile = LR"(d:\52598\xor)";
-	IO::path_string ftyppath = LR"(d:\52598\xor)";
-	IO::path_string mdatpath = LR"(d:\52598\xor)";
-	IO::path_string targetFolder = LR"(d:\52598\xor)";
+	//IO::path_string sourcefile = LR"(c:\52898\52898.img)";
+	//IO::path_string ftyppath = LR"(c:\52898\52898.img.ftyp)";
+	//IO::path_string mdatpath = LR"(c:\52898\52898.img.mdat)";
+	//IO::path_string targetFolder = LR"(d:\52898\RESULT\)";
 	//RAW::saveQtFragment(sourcefile, ftyppath, mdatpath, targetFolder);
 	//std::vector<int> listDisk = { 3,4,5,10,8};
 	//IO::path_string target = LR"(d:\52598\xor)";
@@ -450,8 +450,8 @@ int wmain(int argc, wchar_t* argv[])
 	//{
 	//	IO::moveToDateFolder(fileName, foldername);
 	//}
-
-	//fixAllDbfFiles(foldername);
+	IO::path_string foldername = LR"(c:\tmp\dbf\)";
+	fixAllDbfFiles(foldername);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";
