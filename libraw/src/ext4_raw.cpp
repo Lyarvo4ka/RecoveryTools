@@ -166,6 +166,11 @@ namespace RAW
 				break;
 			offset = data_finder.getFoundPosition();
 			std::cout << offset << " depth = " << extSearchValues.getDepth() << std::endl;
+			if (extSearchValues.getDepth() > 0)
+			{
+				int k = 1;
+				k = 2;
+			}
 			extDepth.addOffset(offset, extSearchValues.getDepth());
 
 
@@ -427,13 +432,13 @@ namespace RAW
 				//extent_block->extent[i].block += 0x10000000;
 
 				uint64_t target_offset = (uint64_t)extent_block->extent[i].block * block_size_;
-				if (i == 0)
-					if (target_offset > 0)
-					{
-						int k = 1;
-						k = 1;
-						return 0;
-					}
+				//if (i == 0)
+				//	if (target_offset > 0)
+				//	{
+				//		int k = 1;
+				//		k = 1;
+				//		return 0;
+				//	}
 				target_file.setPosition(target_offset);
 				target_file.WriteData(data_array.data(), size);
 			}

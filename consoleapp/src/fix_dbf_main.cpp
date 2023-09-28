@@ -392,17 +392,74 @@ void xor_disks( const std::vector<int> &nubers, const IO::path_string& outFile, 
 }
 
 
+
+void WriteFileToHDD(const IO::path_string& sourceFilename,
+	uint64_t filePosition,
+	uint64_t partition_offset,
+	uint64_t target_write_position,
+	uint32_t drive_number)
+{
+	IO::File sourceFile(sourceFilename);
+	sourceFile.OpenRead();
+
+	auto listDisk = IO::ReadPhysicalDrives();
+	auto diskPtr = listDisk.find_by_number(drive_number);
+	if (diskPtr == nullptr)
+	{
+		printf("Error find disk %d", drive_number);
+		return;
+	}
+
+	auto disk = IO::DiskDevice(diskPtr);
+	disk.Open(IO::OpenMode::OpenWrite);
+
+	uint64_t targetWriteOffset = partition_offset + target_write_position - filePosition/default_sector_size;
+
+	uint64_t offset = 0;
+	uint64_t write_offset = targetWriteOffset* default_sector_size;
+	uint32_t block_size = 0;
+	IO::DataArray buff(default_block_size);
+
+	while (offset < sourceFile.Size())
+	{
+		block_size = IO::calcBlockSize(offset, sourceFile.Size(), default_block_size);
+		sourceFile.setPosition(offset);
+		sourceFile.ReadData(buff.data(), block_size);
+
+		disk.setPosition(write_offset);
+		disk.WriteBlock(buff.data(), block_size);
+
+		offset += block_size;
+		write_offset += block_size;
+	}
+
+}
+
 #include "raw/qtfragment.h"
 int wmain(int argc, wchar_t* argv[])
 {
-	//IO::path_string filepath = LR"(c:\52898\52898.img)";
+
+	//if (argc == 6)
+	//{
+	//	IO::path_string sourceFile = argv[1];
+	//	uint64_t filePosition = std::stoll(argv[2]);
+	//	uint64_t target_write_position = std::stoll(argv[3]);
+	//	uint64_t partition_offset = std::stoll(argv[4]);
+	//	uint32_t drive_number = std::stoll(argv[5]);
+
+	//	WriteFileToHDD(sourceFile, filePosition, partition_offset, target_write_position, drive_number);
+	//}
+	//else
+	//	std::cout << "wrong params" << std::endl;
+
+	//IO::path_string filepath = LR"(c:\53239\53239.img )";
 	//RAW::SavePos_ftyp_mdat(filepath);
 
-	//IO::path_string sourcefile = LR"(c:\52898\52898.img)";
-	//IO::path_string ftyppath = LR"(c:\52898\52898.img.ftyp)";
-	//IO::path_string mdatpath = LR"(c:\52898\52898.img.mdat)";
-	//IO::path_string targetFolder = LR"(d:\52898\RESULT\)";
-	//RAW::saveQtFragment(sourcefile, ftyppath, mdatpath, targetFolder);
+	IO::path_string sourcefile = LR"(c:\53239\53239.img)";
+	IO::path_string ftyppath = LR"(c:\53239\53239.img.ftyp)";
+	IO::path_string mdatpath = LR"(c:\53239\53239.img.mdat)";
+	IO::path_string targetFolder = LR"(z:\53239\Data\)";
+	RAW::saveQtFragment(sourcefile, ftyppath, mdatpath, targetFolder);
 	//std::vector<int> listDisk = { 3,4,5,10,8};
 	//IO::path_string target = LR"(d:\52598\xor)";
 	//uint64_t offset = (uint64_t)77323 * 64*1024;
@@ -450,8 +507,8 @@ int wmain(int argc, wchar_t* argv[])
 	//{
 	//	IO::moveToDateFolder(fileName, foldername);
 	//}
-	IO::path_string foldername = LR"(c:\tmp\dbf\)";
-	fixAllDbfFiles(foldername);
+	//IO::path_string foldername = LR"(c:\tmp\dbf\)";
+	//fixAllDbfFiles(foldername);
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";

@@ -9,6 +9,17 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+std::list<RAW::FileStruct> getListFileStructFromSingatureListFormatName(const ListFormatName& listFormatName,  SignatureBase & signatureBase)
+{
+	std::list<RAW::FileStruct> listFileStruct;
+	for (auto formatName : listFormatName)
+	{
+		auto fileStruct = signatureBase.find(formatName);
+		if (fileStruct.isValid())
+			listFileStruct.emplace_back(fileStruct);
+	}
+	return listFileStruct;
+}
 
 class SignatureTester
 {
@@ -76,14 +87,7 @@ public:
 
 	std::list<RAW::FileStruct> getListFileStructFromListFormatName(const ListFormatName& listFormatName)
 	{
-		std::list<RAW::FileStruct> listFileStruct;
-		for (auto formatName : listFormatName)
-		{
-			auto fileStruct = signatureBase_.find(formatName);
-			if (fileStruct.isValid())
-				listFileStruct.emplace_back(fileStruct);
-		}
-		return listFileStruct;
+		return getListFileStructFromSingatureListFormatName(listFormatName, signatureBase_);
 	}
 
 

@@ -37,7 +37,7 @@ add_executable(ReplaceBads src/replaceBads_main.cpp)
 add_executable(FleshCollector src/fleshcollector_main.cpp
                 include/fleshcollector.h)
 
-add_executable(VMFS_recovery src/vmfs_main.cpp)                
+               
 
 # target_include_directories(XorAnalyzer
 #     PUBLIC 
@@ -75,12 +75,11 @@ target_link_libraries(XorAnalyzer libio)
 target_link_libraries(fix_dbf libio)
 target_link_libraries(fix_dbf libraw)
 target_link_libraries(FleshCollector libio)
-target_link_libraries(VMFS_recovery libio)
 # target_link_libraries(FileOffsetsWriter IO::libio)
 
 #find_package(libraw REQUIRED)
 target_link_libraries(ext4_raw libraw)
-target_link_libraries(VMFS_recovery libraw)
+
 # target_link_libraries(XorAnalyzer RAW::libraw)
 # target_link_libraries(fix_dbf RAW::libraw)
 

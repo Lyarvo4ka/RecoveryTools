@@ -64,6 +64,8 @@ namespace RAW
         return 0;
     }
 
+    const uint64_t MAX_SIZE_256 = 249309429760;
+
     bool isContinue(uint32_t * markerArray,  
                     uint32_t numCMP, 
                     const uint64_t mdat_offset , 
@@ -81,6 +83,8 @@ namespace RAW
             if (markerPos > firstPartSize)
             {
                 uint64_t markerOffset = mdat_offset + markerPos - firstPartSize;
+                if (markerOffset >= MAX_SIZE_256)
+                    return false;
                 srcFile->setPosition(markerOffset);
                 srcFile->ReadData(buff);
                 if (memcmp(buff.data(), (void*)&MARKER, 4) != 0)

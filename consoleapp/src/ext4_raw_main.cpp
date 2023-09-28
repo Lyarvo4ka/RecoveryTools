@@ -96,7 +96,7 @@ int saveFilesWithExt4Extent(int argc, char* argv[])
 	//IO::File target_file(targetfilename);
 	//target_file.OpenCreate();
 
-	IO::path_string offsetExtents_txt = LR"(o:\51214\depth\1.depth)";
+	//IO::path_string offsetExtents_txt = LR"(d:\53191\1.depth )";
 
 	ext4ConsoleParser.parse(argc_new, argv);
 	if (ext4ConsoleParser.isValid())
@@ -108,13 +108,14 @@ int saveFilesWithExt4Extent(int argc, char* argv[])
 		
 		//ext4_recovery.setOffsetsFileName(offsetExtents_txt);
 
-		IO::path_string target_folder = LR"(d:\51210\)";
+		IO::path_string target_folder = LR"(i:\53191\)";
 		//uint64_t offset = 0x2a02020000; 
 	//0x19090F8000; - file 80 Gb
 		 
 		auto listOffsets = ext4_recovery.readOffsetsFromFile(offsetsFileName);
-		for (const auto& offset : listOffsets)
+		//for (const auto& offset : listOffsets)
 		{
+			auto offset = 0x1fc7a96000;
 			auto block_number = offset / 4096;
 			auto targetfilename = IO::offsetToPath(target_folder, offset, L".ext");
 			IO::File target_file(targetfilename);
@@ -257,6 +258,7 @@ int main(int argc, char* argv[])
 
 	saveFilesWithExt4Extent(argc, argv);
 	//saveZipFilesWithExt4Extent(argc, argv);
+
 
 	_CrtDumpMemoryLeaks();
 	std::cout << std::endl << " FINISHED ";

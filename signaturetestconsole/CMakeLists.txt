@@ -78,6 +78,7 @@ file(GLOB_RECURSE SOURCES
 add_executable(${APP_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp ${HEADERS} )
 
 add_executable(ExtractExtensions ${CMAKE_CURRENT_SOURCE_DIR}/src/extract_extension_main.cpp ${HEADERS} )
+add_executable(VMFS_recovery ${CMAKE_CURRENT_SOURCE_DIR}/src/vmfs_main.cpp ${HEADERS}) 
 
 target_sources(${APP_NAME}
                 PRIVATE 
@@ -100,18 +101,22 @@ target_include_directories(${APP_NAME}
 #===================== LINKING LIBRARIES =======================#
 target_link_libraries(${APP_NAME} Qt${QT_VERSION_MAJOR}::Core)
 target_link_libraries(ExtractExtensions Qt${QT_VERSION_MAJOR}::Core)
+target_link_libraries(VMFS_recovery Qt${QT_VERSION_MAJOR}::Core)
 
 
 #find_package(libio CONFIG REQUIRED)
 target_link_libraries(${APP_NAME} libio)
 target_link_libraries(ExtractExtensions libio)
+target_link_libraries(VMFS_recovery libio)
 
 #find_package(libraw CONFIG REQUIRED)
 target_link_libraries(${APP_NAME} libraw)
 target_link_libraries(ExtractExtensions libraw)
+target_link_libraries(VMFS_recovery libraw)
 
 #find_package(libjsonreader CONFIG REQUIRED)
 target_link_libraries(${APP_NAME} libjsonreader)
 target_link_libraries(ExtractExtensions libjsonreader)
+target_link_libraries(VMFS_recovery libjsonreader)
 
 
