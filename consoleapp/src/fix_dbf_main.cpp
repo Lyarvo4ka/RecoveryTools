@@ -436,8 +436,311 @@ void WriteFileToHDD(const IO::path_string& sourceFilename,
 }
 
 #include "raw/qtfragment.h"
+#include "io/constants.h"
+
+void saveByPageNumber(const IO::path_string& sourcepath, const IO::path_string& tagetpath ,const uint64_t start_offset)
+{
+	const uint32_t PAGESIZE = 8192;
+
+	IO::File sourceFile(sourcepath);
+	sourceFile.OpenRead();
+
+	IO::File targetFile(tagetpath);
+	targetFile.OpenCreate();
+
+	uint64_t offset = start_offset;
+
+	IO::DataArray buff(PAGESIZE);
+	sourceFile.setPosition(offset);
+	sourceFile.ReadData(buff);
+	uint32_t* page_idPTR = (uint32_t * ) (buff.data() + 4);
+	uint32_t pageID = *page_idPTR;
+	IO::toBE32(pageID);
+
+	offset += buff.size();
+
+	while (offset < sourceFile.Size())
+	{
+		sourceFile.setPosition(offset);
+		sourceFile.ReadData(buff);
+		page_idPTR = (uint32_t*)(buff.data() + 4);
+		uint32_t nextID = *page_idPTR;
+		IO::toBE32(nextID);
+		if (nextID == (pageID + 1))
+		{
+			targetFile.WriteData(buff.data(), buff.size());
+			pageID = nextID;
+		}
+
+		offset += buff.size();
+	}
+
+
+
+
+
+}
+
+#pragma pack(1)
+struct XVAStruct
+{
+	char name[7];
+	char end1;
+	char number_name[8];
+	char end2;
+};
+#pragma pack()
+
+bool findXVABlock(const IO::DataArray& block, const std::string_view textValue, uint32_t & pos)
+{
+	for (uint32_t i = 0; i < block.size(); i += default_sector_size)
+	{
+		XVAStruct* findxvaStruct = (XVAStruct*)(block.data() + i);
+		if (memcmp(findxvaStruct->name, textValue.data(), 7) == 0)
+		{
+			pos = i;
+			return true;
+		}
+	}
+	return false;
+}
+
+void saveXVA(const IO::path_string& sourcepath , const IO::path_string& targetpath)
+{
+	//Ref:422
+	const uint32_t REF_NAME_SIZE = 8;
+	const uint32_t FULL_DATABLOCK_SUZE = 1050112;
+	const uint32_t FIRST_PART_SIZE = 512;
+	const uint32_t USERDATA_SIZE = 1048576;
+	const uint32_t END_PART_SIZE = 1024;
+	const uint32_t THE_OFFSET = 58368;
+	try
+	{
+		IO::File sourceFile(sourcepath);
+		sourceFile.OpenRead();
+		uint64_t offset = 0;
+
+		IO::File targetFile(targetpath);
+		targetFile.OpenWrite();
+
+		const std::string_view textValue = "Ref:430";
+
+		while (offset < sourceFile.Size())
+		{
+
+			IO::DataArray buff(FULL_DATABLOCK_SUZE);
+
+			sourceFile.setPosition(offset);
+			sourceFile.ReadData(buff);
+			if (memcmp(buff.data(), Signatures::bad_sector_marker, Signatures::bad_sector_marker_size) != 0)
+			{
+				XVAStruct* xvaStruct = (XVAStruct*)buff.data();
+				xvaStruct->end1 = 0;
+				xvaStruct->end2 = 0;
+
+				std::string fileName = xvaStruct->name;
+				std::string numberName = xvaStruct->number_name;
+
+				if (fileName.compare(textValue) == 0)
+				{
+
+					uint64_t block_number = stoll(numberName);
+
+
+					uint64_t target_offset = block_number * USERDATA_SIZE;
+					std::wcout << "block_number " << block_number << "\r\n";
+
+					if (target_offset < (uint64_t)1224 * 1024 * 1024 * 1024)
+					{
+						targetFile.setPosition(target_offset);
+						targetFile.WriteData(buff.data() + FIRST_PART_SIZE, USERDATA_SIZE);
+					}
+				}
+				else
+				{
+					uint32_t pos = 0;
+					if (findXVABlock(buff, textValue, pos))
+					{
+						offset += pos;
+						continue;
+					}
+				}
+			}
+
+			offset += FULL_DATABLOCK_SUZE;
+		}
+
+	}
+	catch (IO::Error::IOErrorException& ec)
+	{
+		std::wcout << ec.what();
+	}
+
+
+	
+}
+
+void createFileFillMarker(const IO::path_string& targetpath)
+{
+	IO::File targetFile(targetpath);
+	targetFile.OpenWrite();
+
+	IO::DataArray buff(default_block_size);
+	uint64_t MAXFILESIZE = 1181144317952;//(uint64_t)300 * 1024 * 1024 * 1024;
+	for (uint32_t i = 0; i < buff.size() ; i += default_sector_size)
+	{
+		memcpy(buff.data() + i, Signatures::bad_sector_marker, Signatures::bad_sector_marker_size);
+	}
+	uint64_t offset = 0;
+	while (offset < MAXFILESIZE)
+	{
+		targetFile.setPosition(offset);
+		targetFile.WriteData(buff.data(), buff.size());
+
+		offset += buff.size();
+	}
+
+}
+
+#include "vxfs_inode.h"
+
+void readVXFS_inode()
+{
+	IO::File sourceFile(LR"(c:\53208\NEW_RAID5_miss1.dsk)");
+	sourceFile.OpenRead();
+	uint64_t offset = 22866176;
+	IO::DataArray buff(default_block_size);
+	sourceFile.setPosition(offset);
+	sourceFile.ReadData(buff);
+
+	vxfs_dinode* pvxfsInode = (vxfs_dinode*)buff.data();
+	auto direct0 = pvxfsInode->vdi_org.ext4.ve4_direct[0];
+	auto direct1 = pvxfsInode->vdi_org.ext4.ve4_direct[0];
+
+	uint32_t extent0 = direct0.extent;
+	uint32_t extent_size0 = direct0.size;
+
+	uint32_t extent1 = direct1.extent;
+	uint32_t extent_size1 = direct1.size;
+
+	uint32_t indirect0 = pvxfsInode->vdi_org.ext4.ve4_indir[0];
+	uint32_t indirect1 = pvxfsInode->vdi_org.ext4.ve4_indir[1];
+
+	int k = 1;
+	k = 2;
+
+	IO::toBE32(extent0);
+	IO::toBE32(extent_size0);
+
+	IO::toBE32(extent1);
+	IO::toBE32(extent_size1);
+	IO::toBE32(indirect0);
+	IO::toBE32(indirect1);
+	//constexpr uint32_t vxfs_dinode_size = sizeof(vxfs_dinode);
+	k = 3;
+
+	
+}
+
+void saveByVxFSInode(const IO::path_string& sourcepath, const IO::path_string& targetpath)
+{
+	const uint64_t partition_offset = 5963776;
+	const uint64_t inode_offset = 26812416;
+	// part 1 26304512(bytes)
+	// part 2 26812416 (bytes) . From 0 to 3344 (bytes)
+
+	IO::File sourceFile(sourcepath);
+	sourceFile.OpenRead();
+
+	IO::File targetFile(targetpath);
+	targetFile.OpenWrite();
+
+	uint64_t offset = inode_offset + partition_offset;
+	IO::DataArray inode(8192);
+	sourceFile.setPosition(offset);
+	sourceFile.ReadData(inode);
+	
+	constexpr uint32_t vxfs_typed_size = sizeof(vxfs_typed);
+
+	uint64_t sourceOffset = 0;
+	uint64_t lastOffset = 0;
+	vxfs_typed* pVXFS_typed = (vxfs_typed*)inode.data();
+
+	for (uint32_t i = 0; i < 3344; i += vxfs_typed_size)
+	{
+		uint32_t dataOffset = pVXFS_typed->vt_block;
+		uint32_t dataSize = pVXFS_typed->vt_size;
+		IO::toBE32(dataOffset);
+		IO::toBE32(dataSize);
+
+		sourceOffset = partition_offset + (uint64_t)dataOffset * 1024/* + 1024*/;
+		uint64_t writeSize = (uint64_t)dataSize * 1024;
+		uint64_t target_offset = pVXFS_typed->vt_hdr;
+		IO::toBE64(target_offset);
+		target_offset = target_offset & 0x00000000FFFFFFFF;
+		target_offset *= 1024;
+		//qtRaw.appendToFile(targetFile, soruceOffset, (uint64_t)dataSize*1024);
+		IO::appendDataToFile(sourceFile, sourceOffset, targetFile, writeSize, target_offset);
+		//lastOffset = sourceOffset + ;
+		pVXFS_typed++;
+	}
+	int k = 1;
+	k = 2;
+
+	//vxfs_typed
+
+
+}
+
+void setFreePageNumber(const IO::path_string& sourcepath , const IO::path_string& targeFilename)
+{
+	IO::File sourceFile(sourcepath);
+	sourceFile.OpenRead();
+
+	//IO::path_string targeFilename = sourcepath + L".result";
+	IO::File targetFile(targeFilename);
+	targetFile.OpenWrite();
+	targetFile.setPosition(targetFile.Size());
+
+	IO::DataArray buff(8192);
+	sourceFile.ReadData(buff);
+
+
+	uint32_t valueStart = 0x022CAF60;
+	//IO::toBE32(valueStart);
+
+	for (auto i = 0; i < 1120; ++i)
+	{
+		++valueStart;
+		auto beVal = valueStart;
+		IO::toBE32(beVal);
+
+		memcpy(buff.data() + 4, &beVal, 4);
+		targetFile.WriteData(buff.data() , buff.size());
+	}
+
+
+}
+
 int wmain(int argc, wchar_t* argv[])
 {
+	IO::path_string sourcefilename = LR"(f:\$Folder3DCFE9900\SERVER011.xva)";
+	IO::path_string targefilename = LR"(g:\53242\430_31_07.bin )";
+
+	//setFreePageNumber(sourcefilename , targefilename);
+
+	//saveByVxFSInode(sourcefilename, targefilename );
+	//readVXFS_inode();
+	//IO::path_string sourcefilename = LR"(c:\53208\NEW_RAID5_miss1.dsk )";
+	//IO::path_string targefilename = LR"(d:\53242\425.bin )";
+	//saveXVA(sourcefilename, targefilename);
+
+	//createFileFillMarker(targefilename);
+
+	//uint64_t start_offset = 0xB4559E000;
+	//IO::path_string sourcefile = LR"(c:\53208\jbod.dsk)";
+	//IO::path_string targetfile = LR"(c:\53208\page)";
+	//saveByPageNumber(sourcefile, targetfile, start_offset);
 
 	//if (argc == 6)
 	//{
@@ -452,14 +755,16 @@ int wmain(int argc, wchar_t* argv[])
 	//else
 	//	std::cout << "wrong params" << std::endl;
 
-	//IO::path_string filepath = LR"(c:\53239\53239.img )";
-	//RAW::SavePos_ftyp_mdat(filepath);
+		//IO::path_string filepath = LR"(c:\53239\sample.bin)";
+		//RAW::SavePos_ftyp_mdat(filepath);
 
-	IO::path_string sourcefile = LR"(c:\53239\53239.img)";
+	IO::path_string sourcefile = LR"(c:\53239\53239.img )";
 	IO::path_string ftyppath = LR"(c:\53239\53239.img.ftyp)";
 	IO::path_string mdatpath = LR"(c:\53239\53239.img.mdat)";
-	IO::path_string targetFolder = LR"(z:\53239\Data\)";
+	IO::path_string targetFolder = LR"(x:\53239\DATA\)";
 	RAW::saveQtFragment(sourcefile, ftyppath, mdatpath, targetFolder);
+
+
 	//std::vector<int> listDisk = { 3,4,5,10,8};
 	//IO::path_string target = LR"(d:\52598\xor)";
 	//uint64_t offset = (uint64_t)77323 * 64*1024;
@@ -484,7 +789,7 @@ int wmain(int argc, wchar_t* argv[])
 	//IO::RestoreRootObject();
 
 
-	//IO::path_string foldername = LR"(e:\52394\video\mov\)";
+	//IO::path_string foldername = LR"(x:\53239\result\)";
 	//IO::Finder finder;
 	//finder.FindFiles(foldername);
 	//for (const auto& fileName : finder.getFiles())
@@ -507,7 +812,7 @@ int wmain(int argc, wchar_t* argv[])
 	//{
 	//	IO::moveToDateFolder(fileName, foldername);
 	//}
-	//IO::path_string foldername = LR"(c:\tmp\dbf\)";
+	//IO::path_string foldername = LR"(i:\422\DataBase\WorkBase\!Problem\fixed\)";
 	//fixAllDbfFiles(foldername);
 
 	_CrtDumpMemoryLeaks();

@@ -56,7 +56,7 @@ namespace RAW
 	{
 		IODevicePtr device_;
 		uint32_t block_size_ = default_block_size;
-		uint32_t sector_size_ = default_sector_size;
+		uint32_t sector_size_ = 1;//default_sector_size;
 		HeaderBase::Ptr header_base_;
 	public:
 		SignatureFinder(IODevicePtr device , HeaderBase::Ptr header_base)

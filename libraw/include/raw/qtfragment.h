@@ -54,6 +54,17 @@ namespace RAW
         
     }
 
+    uint64_t find_co64_position(const IO::DataArray& moovData)
+    {
+        for (uint32_t i = 0; i < moovData.size() - co64_table_name.length(); i++)
+        {
+            if (memcmp(moovData.data() + i, co64_table_name.data(), co64_table_name.length()) == 0)
+                return i;
+        }
+        return 0;
+    }
+
+
     uint64_t findSTCOposition(const IO::DataArray & moovData )
     {
         for (uint32_t i = 0; i < moovData.size() - stco_table_name.length(); i++)
@@ -66,33 +77,61 @@ namespace RAW
 
     const uint64_t MAX_SIZE_256 = 249309429760;
 
-    bool isContinue(uint32_t * markerArray,  
+#pragma pack(1)
+    struct co64_t
+    {
+        char name[4];
+        uint64_t co64_size;
+    };
+#pragma pack
+
+    bool isContinue(uint64_t * markerArray,  
                     uint32_t numCMP, 
                     const uint64_t mdat_offset , 
                     const uint64_t firstPartSize,
                      IO::FilePtr  srcFile   )
     {
-        const uint32_t MARKER = 0x02000000;
-        IO::DataArray buff(4);
+        const uint16_t MARKER = 0x0000;
+        const uint16_t MARKER2 = 0x0100;
+        const uint16_t MARKER3 = 0x0200;
+        IO::DataArray buff(2);
         uint64_t offset = 0;
-        auto tableSize = numCMP * sizeof(uint32_t);
+        uint64_t markerOffset = 0;
+        auto tableSize = numCMP * sizeof(uint64_t);
+        uint32_t counter = 0;
         for (uint32_t i = 0; i < numCMP; ++i)
         {
             auto markerPos = markerArray[i];
-            toBE32(markerPos);
+            toBE64(markerPos);
             if (markerPos > firstPartSize)
             {
-                uint64_t markerOffset = mdat_offset + markerPos - firstPartSize;
+                markerOffset = mdat_offset + markerPos - firstPartSize;
+
                 if (markerOffset >= MAX_SIZE_256)
                     return false;
                 srcFile->setPosition(markerOffset);
                 srcFile->ReadData(buff);
-                if (memcmp(buff.data(), (void*)&MARKER, 4) != 0)
-                    return false;
+                uint16_t* pMarker = (uint16_t*)buff.data();
+                toBE16(*pMarker);
+                if (*pMarker <= 9)
+                {
+                    ++counter;
+                    if (counter >= 5)
+                    {
+                        int k = 1;
+                        k = 2;
+                        return true;
+                    }
+                }
+
+
+
             }
 
+
         }
-        return true;
+
+        return false;
     }
 
     void saveQtFragment(const IO::path_string & filename,
@@ -100,7 +139,7 @@ namespace RAW
                         const IO::path_string & mdat_txt ,
                         const IO::path_string & target_folder)
     {
-        const uint32_t NUM_CMP = 5;
+        const uint32_t NUM_CMP = 10;
         ext4_raw ext4(nullptr);
         auto ftypList = ext4.readOffsetsFromFile(ftyp_txt);
         auto mdatList = ext4.readOffsetsFromFile(mdat_txt);
@@ -110,6 +149,7 @@ namespace RAW
 
         for (auto ftypOffset : ftypList)
         {
+           // ftypOffset = 0x2740000;
             QuickTimeRaw qtRaw(sourcePtr);
             auto ftypHandle = qtRaw.readQtAtom(ftypOffset);
             if (!ftypHandle.isValid())
@@ -119,27 +159,28 @@ namespace RAW
                 continue;
             auto freeHandleoffset = ftypOffset + ftypHandle.size() + moovHandle.size();
             uint64_t freeSize = 0;
-            auto freeHandle = qtRaw.readQtAtom(freeHandleoffset);
-            if (freeHandle.isValid())
-                freeSize = freeHandle.size();
+            //auto freeHandle = qtRaw.readQtAtom(freeHandleoffset);
+            //if (freeHandle.isValid())
+            //    freeSize = freeHandle.size();
             auto firstPartSize = ftypHandle.size() + moovHandle.size()  + freeSize;
 
             auto moovData = qtRaw.readQtHandleData(moovHandle); 
-            auto STCOPos = findSTCOposition(moovData); // 
-            STCO_Table * pSTCO = (STCO_Table *)moovData[STCOPos];
+            auto co64Pos = find_co64_position(moovData); // 
+            co64_t * p_co64 = (co64_t*)moovData[co64Pos];
             for (auto mdatOffset : mdatList)
             {
                 //auto tableBlock = pSTCO->stco_block; 
-                uint64_t markerStart = ftypOffset + sizeof(STCO_Table) + STCOPos + 4 + ftypHandle.size();
-                auto tableSize = NUM_CMP * sizeof(uint32_t);
+                auto size_co64t = sizeof(co64_t);
+                uint64_t markerStart = ftypOffset + size_co64t + co64Pos + 8 + ftypHandle.size();
+                auto tableSize = NUM_CMP * sizeof(uint64_t);
                 IO::DataArray markerTable(tableSize);
                 sourcePtr->setPosition(markerStart);
                 sourcePtr->ReadData(markerTable);
-                uint32_t* pTable = (uint32_t*)markerTable.data();
+                uint64_t* pTable = (uint64_t*)markerTable.data();
 
                 if (isContinue(pTable, NUM_CMP, mdatOffset, firstPartSize, sourcePtr))
                 {
-                    auto fileName = target_folder + toHexString(ftypOffset) + L".mov";
+                    auto fileName = target_folder + toHexString(ftypOffset) + L"_" + toHexString(mdatOffset) + L".mov";
                     IO::File targetFile(fileName);
                     targetFile.OpenCreate();
                     qtRaw.appendToFile(targetFile, ftypOffset, firstPartSize);
@@ -153,6 +194,9 @@ namespace RAW
                     }
                     auto mdatSize = qtRaw.readQtAtomSize(mdatHadle.size(), mdatOffset);
                     qtRaw.appendToFile(targetFile, mdatOffset, mdatSize);
+                    targetFile.Close();
+                    int k = 1;
+                    k = 2;
                 }
                 //pSTCO->
                 // read markers

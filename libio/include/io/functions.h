@@ -49,6 +49,56 @@ namespace IO
 		return cur_pos;
 	}
 
+	uint64_t appendDataToFile(File& source_file, 
+							 const uint64_t source_offset, 
+		                     File& write_file, 
+		                     const uint64_t write_size, 
+							 const uint64_t target_offset,
+							 uint32_t block_size = default_block_size)
+	{
+		if (source_offset >= source_file.Size())
+		{
+			printf("Error append to file. Source offset is more than size.\r\n");
+			return 0;
+		}
+
+		uint64_t to_write = write_size;
+		if (source_offset + write_size > source_file.Size())	// ?????
+			to_write = source_file.Size() - write_size;
+
+		if (to_write == 0)
+		{
+			printf("Error append to file. Write size is 0.\r\n");
+		}
+
+		//uint64_t target_offset = write_file.Size();
+		uint32_t bytes_read = 0;
+		uint32_t bytes_written = 0;
+		uint64_t cur_pos = 0;
+		uint64_t read_pos = source_offset;
+		uint32_t bytes_to_write = 0;
+		uint64_t write_offset = target_offset;
+
+		auto buffer = makeDataArray(block_size);
+		while (cur_pos < to_write)
+		{
+			bytes_to_write = calcBlockSize(cur_pos, write_size, block_size);
+
+			source_file.setPosition(read_pos);
+			bytes_read = source_file.ReadData(buffer->data(), bytes_to_write);
+
+			read_pos += bytes_read;
+
+			write_file.setPosition(write_offset);
+			bytes_written = write_file.WriteData(buffer->data(), bytes_read);
+
+			write_offset += bytes_written;
+			cur_pos += bytes_written;
+		}
+
+		return cur_pos;
+	}
+
 	inline void calcNullsForFile(const path_string& file_name, uint32_t block_size)
 	{
 		IO::File src_file(file_name);

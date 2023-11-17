@@ -120,13 +120,13 @@ namespace IO
 	}
 
 
-	inline path_string toNumberString(const uint32_t number)
+	inline path_string toNumberString(const uint64_t number)
 	{
-		const int numValues = 11;
+		const int numValues = 17;
 		wchar_t buff[numValues] = { 0 };
 		ZeroMemory(buff, sizeof(wchar_t) * numValues);
 
-		swprintf_s(buff, numValues, L"%.10u", number);
+		swprintf_s(buff, numValues, L"%.15u", number);
 		path_string number_str(buff);
 		return number_str;
 	}
@@ -152,7 +152,7 @@ namespace IO
 	}
 	inline path_string offsetToPath(const path_string& folder, const uint64_t byte_offset, const path_string& extension, uint32_t sector_size = 512)
 	{
-		return addBackSlash(folder) + toHexString(byte_offset/* / sector_size*/) + extension;
+		return addBackSlash(folder) + toNumberString(byte_offset/* / sector_size*/) + extension;
 	}
 
 	inline bool createDirectory(const path_string& folder, const path_string& new_folder, path_string& result_folder)

@@ -157,8 +157,8 @@ int main(int argc, char *argv[])
 		//////////////////////////////////////////////////////////////////////////
 		
 		auto current_folder = fs::current_path();
-		//IO::path_string folderSignatures = LR"(d:\develop\RecoveryProjects\SignatureTestConsole\signatures\other\)";
-		IO::path_string folderSignatures = current_folder.generic_wstring();
+		IO::path_string folderSignatures = LR"(c:\develop\RecoveryTools\build\rawrecoveryconsole\)";
+		//IO::path_string folderSignatures = current_folder.generic_wstring();
 
 		SignatureReader signatureReader;
 		signatureReader.loadAllSignatures(folderSignatures , L".json");
@@ -194,6 +194,11 @@ int main(int argc, char *argv[])
 		//start_offset = 0x11DE3200;
 		uint64_t header_offset = 0;
 		uint32_t counter = 0;
+
+		uint64_t fileCounter = 0;
+		uint64_t folderCounter = 0;
+		IO::path_string tmp_folder = target_folder;
+
 		//const IO::path_string dst_folder = L"d:\\incoming\\43944\\result\\";
 		while (start_offset < src_device->Size())
 		{
@@ -243,7 +248,16 @@ int main(int argc, char *argv[])
 
 				if (raw_algorithm->Specify(header_offset))
 				{
-					auto target_file = IO::offsetToPath(target_folder, header_offset, file_struct->getExtension(), default_sector_size);
+					
+					auto folderNumber = fileCounter % 2500;
+					if (folderNumber == 0)
+					{
+						auto folderName = toNumberString(folderCounter);
+						tmp_folder = target_folder + addBackSlash(folderName);
+						fs::create_directories(tmp_folder);
+						folderCounter++;
+					}
+					auto target_file = IO::offsetToPath(tmp_folder, header_offset, file_struct->getExtension(), default_sector_size);
 					auto dst_file = IO::makeFilePtr(target_file);
 					if (dst_file->Open(IO::OpenMode::Create))
 
@@ -285,7 +299,8 @@ int main(int argc, char *argv[])
 						}
 						//if (jump_size == 0)
 						jump_size = default_sector_size;
-						start_offset = header_offset + jump_size;
+						start_offset = header_offset + dst_size;
+						fileCounter++;
 
 					}
 					else

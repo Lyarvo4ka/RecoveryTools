@@ -212,6 +212,8 @@ int yaffs_main(int argc, wchar_t* argv[])
 		return 0;
 }
 
+#include "io/finder.h"
+
 int wmain(int argc, wchar_t* argv[])
 {
 	//IO::path_string src =LR"(c:\tmp\Mutate_51403_result.dump)";
@@ -228,25 +230,41 @@ int wmain(int argc, wchar_t* argv[])
 		//replaceEncryptWithBackup(enc, backup);
 	const char bad_sector_array[] = { 0x62 , 0x61 , 0x64 , 0x20 , 0x73 , 0x65 , 0x63 , 0x74 , 0x6F , 0x72 };
 	constexpr uint32_t bad_sector_array_size = SIZEOF_ARRAY(bad_sector_array);
-	IO::DataArray bad_secotr_marker(bad_sector_array_size);
-	std::memcpy(bad_secotr_marker.data(), bad_sector_array, bad_secotr_marker.size());
-	if ( argc == PARAM_COUNT)
+	const char unreadable_marker[] = {0x55 , 0x4E , 0x52 , 0x45 , 0x41 , 0x44 , 0x41 , 0x42 , 0x4C , 0x45 , 0x53 , 0x45 , 0x43 , 0x54 , 0x4F , 0x52};
+	constexpr uint32_t unreadable_marker_size = SIZEOF_ARRAY(unreadable_marker);
+	IO::DataArray bad_secotr_marker(unreadable_marker_size);
+	std::memcpy(bad_secotr_marker.data(), unreadable_marker, bad_secotr_marker.size());
+	//if ( argc == PARAM_COUNT)
 	{
 		
-		IO::path_string withBads = argv[WITH_BADS];
-		IO::path_string withoutBads = argv[WITHOUT_BADS];
-		IO::path_string target = argv[TARGET];
+		//IO::path_string withBads = LR"(i:\422\DataBase\WorkBase\!Problem\1SCRDOC.DBF)";//argv[WITH_BADS];
+		//IO::path_string withoutBads = LR"(i:\422\DataBase\WorkBase\!Problem\old\1SCRDOC.DBF)";//argv[WITHOUT_BADS];
+		//IO::path_string target = withBads + L".fixed";//argv[TARGET];
+		//IO::Finder finder;
+		//finder.add_extension(L".dbf");
+		//finder.FindFiles(LR"(i:\422\DataBase\WorkBase\!Problem\)");
+		//IO::path_string oldFolder = LR"(i:\422\DataBase\WorkBase\old\)";
+		//auto listFiles = finder.getFiles();
+		//for (auto & withBads: listFiles)
+		{ 
+			//std::filesystem::path srcpath = withBads;
+			//IO::path_string withoutBads = oldFolder + srcpath.stem().generic_wstring() + L".dbf";
 
+			//IO::path_string target = withBads + L".fixed";
+			IO::path_string withBads = LR"(x:\53385\53385_1_from_end)";
+			IO::path_string withoutBads = LR"(x:\53385\53385_1)";
+			IO::path_string target = LR"(x:\53385\1.rostok)";
+			IO::replaceBadsFromOtherFile(withBads, withoutBads, target, bad_secotr_marker);
+		}
 		//fixAllDbfFiles(foldername);
-		IO::replaceBadsFromOtherFile(withBads, withoutBads, target, bad_secotr_marker);
 		 
 		_CrtDumpMemoryLeaks();
 		std::cout << std::endl << " FINISHED "; 
 	}
-	else
+//	else
 	{
-		std::cout << " Wrong params. " << std::endl ;
-		std::cout << std::endl << " AppName.exe withBads withoutBads target " << std::endl ;
+		//std::cout << " Wrong params. " << std::endl ;
+		//std::cout << std::endl << " AppName.exe withBads withoutBads target " << std::endl ;
 	}
 	 
 	return 0;

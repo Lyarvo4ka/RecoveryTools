@@ -36,6 +36,7 @@ namespace RAW
 	const char s_PICT[] = "PICT";
 
 	const std::string_view stco_table_name = "stco";
+	const std::string_view co64_table_name = "co64";
 
 
 	const int qt_keyword_size = 4;
