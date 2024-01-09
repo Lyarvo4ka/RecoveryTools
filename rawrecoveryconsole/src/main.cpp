@@ -63,10 +63,10 @@ void initFactoryMananger(RAW::RawFactoryManager & factory_manager)
 
 	//factory_manager.Register("keychain-db", std::make_unique<IO::KeychainRawFactory>());
 
-	//factory_manager.Register("mxf", std::make_unique<RAW::RawMXFFactory>());
+	factory_manager.Register("mxf", std::make_unique<RAW::RawMXFFactory>());
 
 	//factory_manager.Register("go_pro", std::make_unique<IO::GoProRawFactory>());
-	factory_manager.Register("quicktime", std::make_unique<RAW::QuickTimeRawFactory>());
+	//factory_manager.Register("quicktime", std::make_unique<RAW::QuickTimeRawFactory>());
 	
 
 	//factory_manager.Register("BlackVue", std::make_unique<IO::BlackVue_QtRawFactory>());
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 						}
 						//if (jump_size == 0)
 						jump_size = default_sector_size;
-						start_offset = header_offset + dst_size;
+						start_offset = header_offset + jump_size;
 						fileCounter++;
 
 					}

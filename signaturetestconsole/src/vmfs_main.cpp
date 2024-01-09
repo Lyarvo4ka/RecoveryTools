@@ -219,19 +219,19 @@ void findFilesWithOffsets(const IO::path_string & folderForParts , const std::li
 
 
 
-
-int main(int argc, char* argv[])
-{
-
-	QCoreApplication a(argc, argv);
-
-	IO::path_string folderForParts = LR"(c:\53035\SSD_RAID_0_done\)";
-
-	IO::path_string fileOffsetExtTxt = LR"(c:\53035\listOffsetExtension.txt)";
-	auto listOffstExt = readFileOffsetExtension(fileOffsetExtTxt);
-
-	findFilesWithOffsets(folderForParts, listOffstExt);
-
-	qDebug() << "Finished.";
-	return a.exec();
-}
+//
+//int main(int argc, char* argv[])
+//{
+//
+//	QCoreApplication a(argc, argv);
+//
+//	IO::path_string folderForParts = LR"(c:\53035\SSD_RAID_0_done\)";
+//
+//	IO::path_string fileOffsetExtTxt = LR"(c:\53035\listOffsetExtension.txt)";
+//	auto listOffstExt = readFileOffsetExtension(fileOffsetExtTxt);
+//
+//	findFilesWithOffsets(folderForParts, listOffstExt);
+//
+//	qDebug() << "Finished.";
+//	return a.exec();
+//}

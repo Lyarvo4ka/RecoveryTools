@@ -9,7 +9,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-std::list<RAW::FileStruct> getListFileStructFromSingatureListFormatName(const ListFormatName& listFormatName,  SignatureBase & signatureBase)
+inline std::list<RAW::FileStruct> getListFileStructFromSingatureListFormatName(const ListFormatName& listFormatName,  SignatureBase & signatureBase)
 {
 	std::list<RAW::FileStruct> listFileStruct;
 	for (auto formatName : listFormatName)

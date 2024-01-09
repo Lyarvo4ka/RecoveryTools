@@ -56,7 +56,7 @@ namespace RAW
 
     uint64_t find_co64_position(const IO::DataArray& moovData)
     {
-        for (uint32_t i = 0; i < moovData.size() - co64_table_name.length(); i++)
+        for (uint32_t i = 0; i < moovData.size() - co64_table_name.length() ; i++)
         {
             if (memcmp(moovData.data() + i, co64_table_name.data(), co64_table_name.length()) == 0)
                 return i;
@@ -94,7 +94,9 @@ namespace RAW
         const uint16_t MARKER = 0x0000;
         const uint16_t MARKER2 = 0x0100;
         const uint16_t MARKER3 = 0x0200;
-        IO::DataArray buff(2);
+        const uint8_t PANASONIC_MARKER[] = { 0x00 , 0x00 , 0x00 , 0x02 , 0x09 , 0x10 };
+        const uint32_t PANASONIC_MARKER_size = SIZEOF_ARRAY(PANASONIC_MARKER);
+        IO::DataArray buff(PANASONIC_MARKER_size);
         uint64_t offset = 0;
         uint64_t markerOffset = 0;
         auto tableSize = numCMP * sizeof(uint64_t);
@@ -111,12 +113,13 @@ namespace RAW
                     return false;
                 srcFile->setPosition(markerOffset);
                 srcFile->ReadData(buff);
-                uint16_t* pMarker = (uint16_t*)buff.data();
-                toBE16(*pMarker);
-                if (*pMarker <= 9)
+                if (memcmp(buff.data() , PANASONIC_MARKER , PANASONIC_MARKER_size) == 0)
+                //uint16_t* pMarker = (uint16_t*)buff.data();
+                //toBE16(*pMarker);
+                //if (*pMarker <= 9)
                 {
                     ++counter;
-                    if (counter >= 5)
+                    if (counter >= numCMP)
                     {
                         int k = 1;
                         k = 2;
@@ -139,7 +142,7 @@ namespace RAW
                         const IO::path_string & mdat_txt ,
                         const IO::path_string & target_folder)
     {
-        const uint32_t NUM_CMP = 10;
+        const uint32_t NUM_CMP = 5;
         ext4_raw ext4(nullptr);
         auto ftypList = ext4.readOffsetsFromFile(ftyp_txt);
         auto mdatList = ext4.readOffsetsFromFile(mdat_txt);
@@ -149,7 +152,8 @@ namespace RAW
 
         for (auto ftypOffset : ftypList)
         {
-           // ftypOffset = 0x2740000;
+           // ftypOffset = 0xbb6600000;
+            // ftypOffset = 0x2740000;
             QuickTimeRaw qtRaw(sourcePtr);
             auto ftypHandle = qtRaw.readQtAtom(ftypOffset);
             if (!ftypHandle.isValid())
@@ -159,12 +163,16 @@ namespace RAW
                 continue;
             auto freeHandleoffset = ftypOffset + ftypHandle.size() + moovHandle.size();
             uint64_t freeSize = 0;
-            //auto freeHandle = qtRaw.readQtAtom(freeHandleoffset);
-            //if (freeHandle.isValid())
-            //    freeSize = freeHandle.size();
+            auto freeHandle = qtRaw.readQtAtom(freeHandleoffset);
+            if (freeHandle.isValid())
+                freeSize = freeHandle.size();
             auto firstPartSize = ftypHandle.size() + moovHandle.size()  + freeSize;
 
             auto moovData = qtRaw.readQtHandleData(moovHandle); 
+            if (moovData.size() == 0)
+            {
+                continue;
+            }
             auto co64Pos = find_co64_position(moovData); // 
             co64_t * p_co64 = (co64_t*)moovData[co64Pos];
             for (auto mdatOffset : mdatList)
@@ -185,14 +193,14 @@ namespace RAW
                     targetFile.OpenCreate();
                     qtRaw.appendToFile(targetFile, ftypOffset, firstPartSize);
                     auto mdatHadle = qtRaw.readQtAtom(mdatOffset);
-                    if (mdatHadle.compareKeyword("free"))
-                    { 
-                        auto free_size = qtRaw.readQtAtomSize(mdatHadle.size(), mdatOffset);
-                        qtRaw.appendToFile(targetFile, mdatOffset, free_size);
-                        mdatOffset += free_size;
-                        mdatHadle = qtRaw.readQtAtom(mdatOffset);
-                    }
-                    auto mdatSize = qtRaw.readQtAtomSize(mdatHadle.size(), mdatOffset);
+                    //if (mdatHadle.compareKeyword("free"))
+                    //{ 
+                    //    auto free_size = qtRaw.readQtAtomSize(mdatHadle.size(), mdatOffset);
+                    //    qtRaw.appendToFile(targetFile, mdatOffset, free_size);
+                    //    mdatOffset += free_size;
+                    //    mdatHadle = qtRaw.readQtAtom(mdatOffset);
+                    //}
+                    auto mdatSize = mdatHadle.size();//qtRaw.readQtAtomSize(mdatHadle.size(), mdatOffset);
                     qtRaw.appendToFile(targetFile, mdatOffset, mdatSize);
                     targetFile.Close();
                     int k = 1;

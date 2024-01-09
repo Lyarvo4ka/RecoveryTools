@@ -15,13 +15,13 @@ namespace RAW
 
 		uint64_t SaveRawFile(File & target_file, const uint64_t start_offset) override
 		{
-			const uint32_t addition_size = 1024;
+			const uint32_t addition_size = 512 + 48;
 			const uint32_t size_offset = 44;
 			//uint32_t file_size = 0;
-			uint8_t buff[64];
+			IO::DataArray buff(64);
 
 			setPosition(start_offset);
-			auto bytes_read = ReadData(buff, 64);
+			auto bytes_read = ReadData(buff);
 
 			uint64_t * pSize = (uint64_t*)(&buff[size_offset]);
 			toBE64(*pSize);

@@ -722,10 +722,66 @@ void setFreePageNumber(const IO::path_string& sourcepath , const IO::path_string
 
 }
 
+
+#include "raw/gopronew.h"
+
+void saveMDAT(const IO::path_string& filename,
+			  const IO::path_string& mdat_txt,
+			  const IO::path_string& target_folder)
+{
+	RAW::ext4_raw ext4(nullptr);
+
+	auto mdatList = ext4.readOffsetsFromFile(mdat_txt);
+
+	auto sourcePtr = IO::makeFilePtr(filename);
+	sourcePtr->OpenRead();
+
+	for (auto mdatOffset : mdatList)
+	{
+		RAW::QuickTimeRaw qtRaw(sourcePtr);
+		auto mdatHandle = qtRaw.readQtAtom(mdatOffset);
+		if (mdatHandle.isValid())
+		{
+			auto fileName = target_folder + IO::toHexString(mdatOffset) + L".mov";
+			IO::File targetFile(fileName);
+			targetFile.OpenCreate();
+			auto mdat_size = mdatHandle.size();
+			qtRaw.appendToFile(targetFile, mdatOffset, mdatHandle.size());
+		}
+	}
+
+}
+
+void moovToDateSubfolders(const IO::path_string& folderfilename)
+{
+	IO::Finder finder;
+	finder.FindFiles(folderfilename);
+
+	for (const auto& filepath : finder.getFiles())
+	{
+		fs::path mainPath(filepath);
+		auto filename = mainPath.filename().generic_wstring();
+
+		//fs::create_directories
+		auto yearName = filename.substr(0, 4);
+		auto monthName = filename.substr(5, 2);
+
+		auto newFolder = folderfilename  + yearName + L"\\" + monthName;
+
+		fs::create_directories(newFolder);
+
+		auto newFilename = newFolder + L"\\" + filename;
+
+		fs::rename(filepath, newFilename);
+		int k = 1;
+		k = 1;
+	}
+}
+
 int wmain(int argc, wchar_t* argv[])
 {
-	IO::path_string sourcefilename = LR"(f:\$Folder3DCFE9900\SERVER011.xva)";
-	IO::path_string targefilename = LR"(g:\53242\430_31_07.bin )";
+	//IO::path_string sourcefilename = LR"(f:\$Folder3DCFE9900\SERVER011.xva)";
+	//IO::path_string targefilename = LR"(g:\53242\430_31_07.bin )";
 
 	//setFreePageNumber(sourcefilename , targefilename);
 
@@ -755,14 +811,18 @@ int wmain(int argc, wchar_t* argv[])
 	//else
 	//	std::cout << "wrong params" << std::endl;
 
-		//IO::path_string filepath = LR"(c:\53239\sample.bin)";
-		//RAW::SavePos_ftyp_mdat(filepath);
+		//IO::path_string filepath = LR"(c:\53443\53443.img)";
+		//RAW::GoProRawNew gpRawNew(filepath);
+		//gpRawNew.SaveByMarkers(LR"(c:\53443\53443.img.ftyp)", LR"(d:\53443\result\)");
 
-	IO::path_string sourcefile = LR"(c:\53239\53239.img )";
-	IO::path_string ftyppath = LR"(c:\53239\53239.img.ftyp)";
-	IO::path_string mdatpath = LR"(c:\53239\53239.img.mdat)";
-	IO::path_string targetFolder = LR"(x:\53239\DATA\)";
-	RAW::saveQtFragment(sourcefile, ftyppath, mdatpath, targetFolder);
+	IO::path_string sourcefile = LR"(f:\CR3\)";
+	moovToDateSubfolders(sourcefile);
+	//IO::path_string ftyppath = LR"(c:\53443\53443.img.ftyp)";
+	//IO::path_string mdatpath = LR"(c:\53443\53443.img.mdat)";
+	//IO::path_string targetFolder = LR"(x:\53443\video1\)";
+	//RAW::SavePos_ftyp_mdat(sourcefile);
+	//RAW::saveQtFragment(sourcefile, ftyppath, mdatpath, targetFolder);
+	//saveMDAT(sourcefile,  mdatpath, targetFolder);
 
 
 	//std::vector<int> listDisk = { 3,4,5,10,8};

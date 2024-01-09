@@ -232,8 +232,8 @@ int wmain(int argc, wchar_t* argv[])
 	constexpr uint32_t bad_sector_array_size = SIZEOF_ARRAY(bad_sector_array);
 	const char unreadable_marker[] = {0x55 , 0x4E , 0x52 , 0x45 , 0x41 , 0x44 , 0x41 , 0x42 , 0x4C , 0x45 , 0x53 , 0x45 , 0x43 , 0x54 , 0x4F , 0x52};
 	constexpr uint32_t unreadable_marker_size = SIZEOF_ARRAY(unreadable_marker);
-	IO::DataArray bad_secotr_marker(unreadable_marker_size);
-	std::memcpy(bad_secotr_marker.data(), unreadable_marker, bad_secotr_marker.size());
+	IO::DataArray bad_secotr_marker(bad_sector_array_size);
+	std::memcpy(bad_secotr_marker.data(), bad_sector_array, bad_secotr_marker.size());
 	//if ( argc == PARAM_COUNT)
 	{
 		
@@ -251,9 +251,9 @@ int wmain(int argc, wchar_t* argv[])
 			//IO::path_string withoutBads = oldFolder + srcpath.stem().generic_wstring() + L".dbf";
 
 			//IO::path_string target = withBads + L".fixed";
-			IO::path_string withBads = LR"(x:\53385\53385_1_from_end)";
-			IO::path_string withoutBads = LR"(x:\53385\53385_1)";
-			IO::path_string target = LR"(x:\53385\1.rostok)";
+			IO::path_string withBads = LR"(x:\53467\Data\!Problem\База 1С ФОП нова\1Cv8.1CD)";
+			IO::path_string withoutBads = LR"(x:\53467\Data\!Problem\База 1С ФОП нова\old\1Cv8.1CD)";
+			IO::path_string target = LR"(x:\53467\Data\!Problem\База 1С ФОП нова\result)";
 			IO::replaceBadsFromOtherFile(withBads, withoutBads, target, bad_secotr_marker);
 		}
 		//fixAllDbfFiles(foldername);

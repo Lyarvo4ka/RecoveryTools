@@ -30,7 +30,7 @@ int extract_extension()
 	//extExtractor.setHeaderBase(headerBase);
 
 	IO::Finder finder;
-	finder.FindFiles(LR"(d:\tmp\MOV\)");
+	finder.FindFiles(LR"(f:\video\)");
 	finder.add_extension(L"*.*");
 	auto all_files = finder.getFiles();
 	for (auto& testFile : all_files)

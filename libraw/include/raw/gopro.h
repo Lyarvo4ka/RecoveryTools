@@ -676,10 +676,12 @@ namespace RAW
 			auto find_offset = start_offset;
 			DataArray cluster(cluster_size_);
 			uint32_t find_pos = 0;
+			uint32_t bytesRead = 0;
 			while (find_offset < device_->Size())
 			{
+				bytesRead = IO::calcBlockSize(find_offset, device_->Size(), cluster.size());
 				device_->setPosition(find_offset);
-				device_->ReadData(cluster.data(), cluster.size());
+				device_->ReadData(cluster.data(), bytesRead);
 				find_pos = 0;
 				if (findMOOV_signature(cluster, find_pos))
 				{
@@ -695,7 +697,7 @@ namespace RAW
 						device_->setPosition(moov_start);
 						device_->ReadData(moov_data.data() , moov_data.size());
 						uint32_t table_pos = 0;
-						if (findTextTnBlockFromEnd(moov_data, stco_table_name, table_pos))
+						if (findTextTnBlock(moov_data, stco_table_name, table_pos))
 						{
 							table_pos -= 4;
 							auto stco_table_info = (STCO_Table*)(moov_data.data() + table_pos);
@@ -941,6 +943,7 @@ namespace RAW
 			return new GoProRaw(device);
 		}
 	};
+
 
 
 };
