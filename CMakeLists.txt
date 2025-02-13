@@ -8,6 +8,8 @@ add_subdirectory(libjsonreader)
 add_subdirectory(consoleapp)
 add_subdirectory(signaturetestconsole)
 add_subdirectory(rawrecoveryconsole)
+add_subdirectory(libfs)
+add_subdirectory(FSViewer)
 
 #add_subdirectory(RawRecovery)
 
